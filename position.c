@@ -44,6 +44,7 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
     newState->halfmovecount     = pos->state->halfmovecount + 1;
     newState->turn              = !pos->state->turn; // watch out the color is updated
     // reset stuff
+    newState->castling          = pos->state->castling;
     newState->enpassant         = -1;
     newState->capturedSquare    = -1;
     newState->capturedPieceType = -1;

@@ -37,15 +37,16 @@ uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
     uint64_t b1 = shift_bb(pawnsNotOn7, up) & empties;
     uint64_t b2 = shift_bb(b1 & TRANK3, up) & empties;
 
+    int to;
     while (b1)
     {
-        int to = __builtin_ctzll(b1);
+        to = __builtin_ctzll(b1);
         *moveList++ = (to - up) | (to << 6);
         b1 &= b1 - 1;
     }
     while (b2)
     {
-        int to = __builtin_ctzll(b2);
+        to = __builtin_ctzll(b2);
         *moveList++ = (to - up - up) | (to << 6);
         b2 &= b2 - 1;
     }
@@ -58,19 +59,19 @@ uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
 
         while (b1)
         {
-            int to = __builtin_ctzll(b1);
+            to = __builtin_ctzll(b1);
             moveList = makePromotions(to - upRight, to, moveList);
             b1 &= b1 - 1;
         }
         while (b2)
         {
-            int to = __builtin_ctzll(b2);
+            to = __builtin_ctzll(b2);
             moveList = makePromotions(to - upLeft, to, moveList);
             b2 &= b2 - 1;
         }
         while (b3)
         {
-            int to = __builtin_ctzll(b3);
+            to = __builtin_ctzll(b3);
             moveList = makePromotions(to - up, to, moveList);
             b3 &= b3 - 1;
         }
@@ -81,32 +82,32 @@ uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
     
     while (b1)
     {
-        int to = __builtin_ctzll(b1);
+        to = __builtin_ctzll(b1);
         *moveList++ = (to - upRight) | (to << 6);
         b1 &= b1 - 1;
     }
     while (b2)
     {
-        int to = __builtin_ctzll(b2);
+        to = __builtin_ctzll(b2);
         *moveList++ = (to - upLeft) | (to << 6);
         b2 &= b2 - 1;
     }
 
     if (pos->state->enpassant != -1)
     {
-        uint64_t ep = file_bb(pos->state->enpassant) & TRANK5;
-        uint64_t b1 = shift_bb(pawnsNotOn7, upRight);
-        uint64_t b2 = shift_bb(pawnsNotOn7, upLeft);
+        uint64_t ep = sq_bb(pos->state->enpassant);
+        uint64_t b1 = shift_bb(pawnsNotOn7, upRight) & ep;
+        uint64_t b2 = shift_bb(pawnsNotOn7, upLeft)  & ep;
 
         while (b1)
         {
-            int to = __builtin_ctzll(b1);
+            to = __builtin_ctzll(b1);
             *moveList++ = (to - upRight) | (to << 6) | (ENPASSANT << 12);
             b1 &= b1 - 1;
         }
         while (b2)
         {
-            int to = __builtin_ctzll(b2);
+            to = __builtin_ctzll(b2);
             *moveList++ = (to - upLeft) | (to << 6) | (ENPASSANT << 12);
             b2 &= b2 - 1;
         }
