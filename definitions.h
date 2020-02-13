@@ -1,0 +1,57 @@
+#ifndef DEFINITIONS_H_
+#define DEFINITIONS_H_
+
+#include <stdint.h>
+
+enum Square
+{
+    A8, B8, C8, D8, E8, F8, G8, H8,
+    A7, B7, C7, D7, E7, F7, G7, H7,
+    A6, B6, C6, D6, E6, F6, G6, H6,
+    A5, B5, C5, D5, E5, F5, G5, H5,
+    A4, B4, C4, D4, E4, F4, G4, H4,
+    A3, B3, C3, D3, E3, F3, G3, H3,
+    A2, B2, C2, D2, E2, F2, G2, H2,
+    A1, B1, C1, D1, E1, F1, G1, H1,
+
+    SQUARE_N,
+};
+
+enum Color { WHITE, BLACK, COLOR_N, };
+enum Piece { QUEEN, ROOK, BISHOP, KNIGHT, KING, PAWN, PIECE_N, };
+enum PieceType
+{ 
+    WHITE_QUEEN = 0,  WHITE_ROOK = 1,  WHITE_BISHOP = 2,  WHITE_KNIGHT = 3,  WHITE_KING = 4,  WHITE_PAWN = 5,
+    BLACK_QUEEN = 16, BLACK_ROOK = 17, BLACK_BISHOP = 18, BLACK_KNIGHT = 19, BLACK_KING = 20, BLACK_PAWN = 21,
+
+    EMPTY,
+};
+enum Castle { WOO = 1, WOOO = 2, BOO = 4, BOOO = 8, CASTLE_N = 16};
+enum Tag { CASTLING = 1, PROMOTION = 2, ENPASSANT = 3, };
+
+const uint64_t FILEA, FILEB, FILEC, FILED, FILEE, FILEF, FILEG, FILEH;
+const uint64_t RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8;
+
+const uint64_t FILES[8];
+const uint64_t RANKS[8];
+
+uint64_t rank_bb(int sq);
+uint64_t file_bb(int sq);
+uint64_t shift_bb(uint64_t bb, int s);
+uint64_t sq_bb(int sq);
+
+const uint64_t NILEA, NILEH;
+const uint64_t NILEAB, NILEGH;
+
+const int SHIFT[8];
+const uint64_t WRAP[8];
+
+const uint64_t WOO_MASK;
+const uint64_t WOOO_MASK;
+const uint64_t BOO_MASK;
+const uint64_t BOOO_MASK;
+
+const char *squareString[SQUARE_N];
+const char pieceTypeChar[24];
+
+#endif // DEFINITIONS_H_
