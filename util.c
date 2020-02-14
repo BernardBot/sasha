@@ -19,8 +19,8 @@ void printU64(uint64_t board)
 
 void printMove(uint16_t move)
 {
-    int from = move & 0b111111;
-    int to = (move >> 6) & 0b111111;
+    int from =  move       & 0b111111;
+    int to   = (move >> 6) & 0b111111;
     printf(" %s%s", squareString[from], squareString[to]);
 }
 
@@ -41,19 +41,21 @@ void printMoveList(uint16_t *moveList)
 
 void printBoard(int pieceType[])
 {
-    putchar('\n');
     int i;
+    printf("\n");
     for (i = 0; i < SQUARE_N; i++)
     {
         if (i % 8 == 0)
         {
-            putchar('8' - i / 8);
+            printf("%c  ", '8' - i / 8);
         }
-        putchar(pieceTypeChar[pieceType[i]]);
+
+        printf("%c  ", pieceTypeChar[pieceType[i]]);
+
         if (i % 8 == 7) 
         {
-            putchar('\n');
+            printf("\n");
         }
     }
-    printf(" abcdefgh\n\n");
+    printf("   a  b  c  d  e  f  g  h\n\n");
 }

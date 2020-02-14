@@ -2,6 +2,7 @@
 #define POSITION_H_
 
 #include <stdint.h>
+#include "definitions.h"
 
 struct State
 {
@@ -20,15 +21,15 @@ struct State
 };
 struct Position
 {
-    uint64_t color[2];
-    uint64_t piece[6];
+    uint64_t color[COLOR_N];
+    uint64_t piece[PIECE_N];
 
-    int pieceType[64];
+    int pieceType[SQUARE_N];
 
     struct State *state;
 };
 
-void doMove(uint16_t move, struct Position *pos, struct State *newState);
+void   doMove(uint16_t move, struct Position *pos, struct State *newState);
 void undoMove(uint16_t move, struct Position *pos);
 
 int parseInteger(char *s);

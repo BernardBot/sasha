@@ -30,7 +30,7 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
     newState->capturedPieceType = -1;
     newState->turn              = !pos->state->turn; // watch out the color is updated
     newState->previousState     = pos->state;
-    pos->state                  = newState;
+    pos->state                  = newState; // creates the history of states
 
     // move piece
     pos->piece[fromPiece] ^= fromToSquare;
@@ -206,32 +206,22 @@ void parseFen(char *fen, struct Position *pos)
             pos->pieceType[i++] = pieceType;
         }
     }
-
     while (*fen == ' ') fen++;
-
     if      (*fen == 'w') pos->state->turn = WHITE;
     else if (*fen == 'b') pos->state->turn = BLACK;
-
     while (*fen == 'w' || *fen == 'b') fen++;
     while (*fen == ' ') fen++;
-
-    pos->state->castling = parseCastling(fen);
-
+                          pos->state->castling = parseCastling(fen);
     while (*fen == '-' || *fen == 'K' || *fen == 'k' || *fen == 'Q' || *fen == 'q') fen++;
     while (*fen == ' ') fen++;
-
-    if (*fen == '-') pos->state->enpassant = -1;
-    else             pos->state->enpassant = parseSquare(*fen, *(fen + 1));
-
+    if (*fen == '-')      pos->state->enpassant = -1;
+    else                  pos->state->enpassant = parseSquare(*fen, *(fen + 1));
     while (*fen == '-' || ('a' <= *fen && *fen <= 'h') || ('1' <= *fen && *fen <= '8')) fen++;
     while (*fen == ' ') fen++;
-
-    pos->state->movecount = parseInteger(fen);
-
+                          pos->state->movecount = parseInteger(fen);
     while ('0' <= *fen && *fen <= '9') fen++;
     while (*fen == ' ') fen++;
-
-    pos->state->halfmovecount = parseInteger(fen);
+                          pos->state->halfmovecount = parseInteger(fen);
 }
 
 int parseInteger(char *s)
@@ -258,6 +248,6 @@ int parseCastling(char *s)
         else if (*s == 'Q') i |= WOOO;
         else if (*s == 'k') i |= BOO;
         else if (*s == 'q') i |= BOOO;
-     }
-     return i;
+    }
+    return i;
 }

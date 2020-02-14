@@ -189,10 +189,10 @@ uint16_t* generateCastleMoves
 )
 {
     // assume king is not in check
-    if ( OOO[us]      & pos->state->castling              &&
-        (OOO_MASK[us] & empties) == OOO_MASK[us]          &&
-        (pos->pieceType[BRANK[us][A8]] % PIECE_N == ROOK) &&
-        !squareIsAttacked(BRANK[us][C8], them, pos)       &&
+    if ( OOO[us]      & pos->state->castling              && // castling flag set?
+        (OOO_MASK[us] & empties) == OOO_MASK[us]          && // squares between rook and king empty?
+        (pos->pieceType[BRANK[us][A8]] % PIECE_N == ROOK) && // rook still on original square?
+        !squareIsAttacked(BRANK[us][C8], them, pos)       && // squares for king not attacked?
         !squareIsAttacked(BRANK[us][D8], them, pos))
     {
         *moveList++ = (BRANK[us][E8]) | (BRANK[us][C8] << 6) | (CASTLING << 12);

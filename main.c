@@ -10,42 +10,72 @@
 
 int main()
 {
+    // TODO: take a break :)
     struct Position pos;
     struct State state;
-    struct State newState;
+    struct State newState[100];
     pos.state = &state;
-    char *fen = "8/8/8/8/3p4/8/4P3/8 w - - 0 1";
+    char *fen = "r1bq1rk1/2p1bppp/p1n2n2/1p1pp3/4P3/1BP2N2/PP1P1PPP/RNBQR1K1 w - - 0 9";
     uint16_t moveList[256] = {0};
-    uint16_t *p;
+    uint16_t moves[100];
+    uint16_t *mPtr = moves;
 
-    readFen(fen, &pos);
+    parseFen(fen, &pos);
     initLookup();
 
-    p = generatePseudoMoves(&pos, moveList);
-    printBoard(pos.pieceType);
-    printMoveList(moveList);
-
-    uint16_t move = (B4) | (A3 << 6) | (ENPASSANT << 12);
-    printf("%ld\n", p - moveList);
-    doMove(moveList[1], &pos, &newState);
-    
-    for (int i = 0; i < 256; i++)
+    char s[100];
+    int i = 0;
+    for(;;)
     {
-        moveList[i] = 0;
+        for (int j = 0; j < 256; j++)
+        {
+            moveList[j] = 0;
+        }
+        generatePseudoMoves(&pos, moveList);
+        printBoard(pos.pieceType);
+        printMoveList(moveList);
+
+        printf(">");
+        scanf("%s", s);
+        if (s[0] == 'u')
+        {
+            if (mPtr == moves)
+            {
+                printf("NOTHING TO UNDO\n");
+                continue;
+            }
+            undoMove(*--mPtr, &pos);
+        } else
+        {
+            int fromSq = parseSquare(s[0], s[1]);
+            int toSq   = parseSquare(s[2], s[3]);
+            if (!(0 <= fromSq && fromSq < SQUARE_N) ||
+                !(0 <= toSq   && toSq   < SQUARE_N))
+                {
+                    printf("ENTER LEGAL MOVE BITCH\n");
+                    continue;
+                }            
+            int legal = 0;
+            *mPtr = (fromSq) | (toSq << 6);
+            for (int j = 0; j < 256; j++)
+            {
+                if (*mPtr == (moveList[j] & 0xfff))
+                {
+                    *mPtr = moveList[j];
+                    legal = 1;
+                    break;
+                }
+            }
+
+            if (!legal)
+            {
+                printf("ENTER LEGAL MOVE BITCH\n");
+                continue;
+            }
+
+            doMove(*mPtr++, &pos, &newState[i++]);
+        }
     }
 
-    generatePseudoMoves(&pos, moveList);
-    printBoard(pos.pieceType);
-    printMoveList(moveList);
-    
-    // printf("%d\n", pos.state->movecount);
-    // printf("%d\n", pos.state->halfmovecount);
-    // for (int p = 0; p < PIECE_N; p++)
-    // {
-    //     printf("%d\n", p);
-    //     printU64(pos.piece[p]);
-    // }
-    // for (int c = 0; c < COLOR_N; c++)
-    //     printU64(pos.color[c]);
     return 0;
 }
