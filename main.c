@@ -10,12 +10,11 @@
 
 int main()
 {
-
     struct Position pos;
     struct State state;
     struct State newState;
     pos.state = &state;
-    char *fen = "8/PP6/8/8/8/8/P6P/R3K2R w - - 0 1";
+    char *fen = "8/8/8/8/3p4/8/4P3/8 w - - 0 1";
     uint16_t moveList[256] = {0};
     uint16_t *p;
 
@@ -26,9 +25,9 @@ int main()
     printBoard(pos.pieceType);
     printMoveList(moveList);
 
-    uint16_t move = (A1) | (D1 << 6) | (CASTLING << 12);
+    uint16_t move = (B4) | (A3 << 6) | (ENPASSANT << 12);
     printf("%ld\n", p - moveList);
-    doMove(move, &pos, &newState);
+    doMove(moveList[1], &pos, &newState);
     
     for (int i = 0; i < 256; i++)
     {

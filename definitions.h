@@ -21,12 +21,12 @@ enum Color { WHITE, BLACK, COLOR_N, };
 enum Piece { QUEEN, ROOK, BISHOP, KNIGHT, KING, PAWN, PIECE_N, };
 enum PieceType
 { 
-    WHITE_QUEEN = 0,  WHITE_ROOK = 1,  WHITE_BISHOP = 2,  WHITE_KNIGHT = 3,  WHITE_KING = 4,  WHITE_PAWN = 5,
-    BLACK_QUEEN = 16, BLACK_ROOK = 17, BLACK_BISHOP = 18, BLACK_KNIGHT = 19, BLACK_KING = 20, BLACK_PAWN = 21,
+    WHITE_QUEEN, WHITE_ROOK, WHITE_BISHOP, WHITE_KNIGHT, WHITE_KING, WHITE_PAWN,
+    BLACK_QUEEN, BLACK_ROOK, BLACK_BISHOP, BLACK_KNIGHT, BLACK_KING, BLACK_PAWN,
 
-    EMPTY,
+    EMPTY, PIECETYPE_N,
 };
-enum Castle { WOO = 1, WOOO = 2, BOO = 4, BOOO = 8, CASTLE_N = 16};
+enum Castle { WOO = 1, WOOO = 2, BOO = 4, BOOO = 8, CASTLE_N = 16,};
 enum Tag { CASTLING = 1, PROMOTION = 2, ENPASSANT = 3, };
 
 const uint64_t FILEA, FILEB, FILEC, FILED, FILEE, FILEF, FILEG, FILEH;
@@ -35,6 +35,7 @@ const uint64_t RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8;
 const uint64_t FILES[8];
 const uint64_t RANKS[8];
 
+// make these macros?
 uint64_t rank_bb(int sq);
 uint64_t file_bb(int sq);
 uint64_t shift_bb(uint64_t bb, int s);
@@ -52,6 +53,6 @@ const uint64_t BOO_MASK;
 const uint64_t BOOO_MASK;
 
 const char *squareString[SQUARE_N];
-const char pieceTypeChar[24];
+const char pieceTypeChar[PIECETYPE_N];
 
 #endif // DEFINITIONS_H_

@@ -28,9 +28,6 @@ struct Position
     struct State *state;
 };
 
-int pieceOf(int pieceType);
-int colorOf(int pieceType);
-
 void doMove(uint16_t move, struct Position *pos, struct State *newState);
 void undoMove(uint16_t move, struct Position *pos);
 

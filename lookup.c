@@ -81,7 +81,7 @@ void initMagic(int sq, uint64_t *mask, uint64_t *magic, uint64_t attackTable[], 
     int i, j, size, shift;
     uint64_t empties[4096], attacks[4096], b;
 
-    uint64_t square = sq_bb(sq);
+    uint64_t square =   sq_bb(sq);
     uint64_t file   = file_bb(sq);
     uint64_t rank   = rank_bb(sq);
 

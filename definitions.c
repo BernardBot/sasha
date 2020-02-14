@@ -19,8 +19,8 @@ const uint64_t RANK6 = RANK1 >> 40;
 const uint64_t RANK7 = RANK1 >> 48;
 const uint64_t RANK8 = RANK1 >> 56;
 
-const uint64_t FILES[8] = {FILEA, FILEB, FILEC, FILED, FILEE, FILEF, FILEG, FILEH};
-const uint64_t RANKS[8] = {RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8};
+const uint64_t FILES[8] = { FILEA, FILEB, FILEC, FILED, FILEE, FILEF, FILEG, FILEH };
+const uint64_t RANKS[8] = { RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8 };
 
 uint64_t rank_bb(int sq)
 {
@@ -58,11 +58,11 @@ const uint64_t WRAP[8] = {
 };
 
 const uint64_t WOO_MASK  = 0x6000000000000000ull;
-const uint64_t WOOO_MASK = 0xc00000000000000ull;
+const uint64_t WOOO_MASK = 0xe00000000000000ull;
 const uint64_t BOO_MASK  = 0x60ull;
-const uint64_t BOOO_MASK = 0xcull;
+const uint64_t BOOO_MASK = 0xeull;
 
-const char *squareString[64] = {
+const char *squareString[SQUARE_N] = {
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
     "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
@@ -72,4 +72,4 @@ const char *squareString[64] = {
     "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
 };
-const char pieceTypeChar[24] = "QRBNKP0123456789qrbnkp."; // digits are empty padding
+const char pieceTypeChar[PIECETYPE_N] = "QRBNKPqrbnkp.";

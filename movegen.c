@@ -16,7 +16,7 @@ uint16_t* makePromotions(int from, int to, uint16_t* moveList)
 
 uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
 {
-    const int us = pos->state->turn;
+    const int us   = pos->state->turn;
     const int them = !us;
 
     const uint64_t friends = pos->color[us];
@@ -25,7 +25,6 @@ uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
 
     const uint64_t TRANK3 = us == WHITE ? RANK3 : RANK6;
     const uint64_t TRANK7 = us == WHITE ? RANK7 : RANK2;
-    const uint64_t TRANK5 = us == WHITE ? RANK5 : RANK4;
 
     const int up          = us == WHITE ? -8    : 8;
     const int upLeft      = us == WHITE ? -9    : 7;
@@ -118,50 +117,79 @@ uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
 
 uint16_t* generatePieceMoves(struct Position *pos, uint16_t *moveList)
 {
-    const int us = pos->state->turn;
+    const int us   = pos->state->turn;
     const int them = !us;
 
-    const uint64_t friends = pos->color[us];
-    const uint64_t enemies = pos->color[them];
-    const uint64_t empties = ~(friends | enemies);
+    const uint64_t friends    = pos->color[us];
+    const uint64_t enemies    = pos->color[them];
+    const uint64_t empties    = ~(friends | enemies);
+    const uint64_t notFriends = ~friends;
  
     uint64_t b, c;
-    int pc, from, to;
+    int from, to;
 
-    for (pc = 0; pc < PAWN; pc++)
+    b = pos->piece[KNIGHT] & friends;
+    while (b)
     {
-        b = pos->piece[pc] & friends;
-        while (b)
+        from = __builtin_ctzll(b);
+        c = knightLookup(from) & notFriends;
+        while (c)
         {
-            from = __builtin_ctzll(b);
-
-            switch (pc)
-            {
-            case KNIGHT: c = knightLookup(from)          & ~friends; break;
-            case KING:   c = kingLookup(from)            & ~friends; break;
-            case ROOK:   c = rookLookup(from, empties)   & ~friends; break;
-            case BISHOP: c = bishopLookup(from, empties) & ~friends; break;
-            case QUEEN:  c = (rookLookup(from, empties) | bishopLookup(from, empties)) & ~friends; break;
-            default:     c = 0; break;
-            }
-
-            while (c)
-            {
-                to = __builtin_ctzll(c);
-                *moveList++ = (from) | (to << 6);
-                c &= c - 1;
-            }
-            
-            b &= b - 1;
+            to = __builtin_ctzll(c);
+            *moveList++ = (from) | (to << 6);
+            c &= c - 1;
         }
+        b &= b - 1;
+    }
+
+    b = pos->piece[KING] & friends;
+    while (b)
+    {
+        from = __builtin_ctzll(b);
+        c = kingLookup(from) & notFriends;
+        while (c)
+        {
+            to = __builtin_ctzll(c);
+            *moveList++ = (from) | (to << 6);
+            c &= c - 1;
+        }
+        b &= b - 1;
+    }
+
+    b = (pos->piece[ROOK] | pos->piece[QUEEN]) & friends;
+    while (b)
+    {
+        from = __builtin_ctzll(b);
+        c = rookLookup(from, empties) & notFriends;
+        while (c)
+        {
+            to = __builtin_ctzll(c);
+            *moveList++ = (from) | (to << 6);
+            c &= c - 1;
+        }
+        b &= b - 1;
+    }
+
+    b = (pos->piece[BISHOP] | pos->piece[QUEEN]) & friends;
+    while (b)
+    {
+        from = __builtin_ctzll(b);
+        c = bishopLookup(from, empties) & notFriends;
+        while (c)
+        {
+            to = __builtin_ctzll(c);
+            *moveList++ = (from) | (to << 6);
+            c &= c - 1;
+        }
+        b &= b - 1;
     }
 
     return moveList;
 }
 uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList)
 {
-    const uint64_t us = pos->state->turn;
-    const uint64_t them = !us;
+    const uint64_t us      = pos->state->turn;
+    const uint64_t them    = !us;
     const uint64_t empties = ~(pos->color[us] | pos->color[them]);
 
     const uint64_t OO_MASK  = us == WHITE ? WOO_MASK  : BOO_MASK;
@@ -171,22 +199,14 @@ uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList)
     const int OOO           = us == WHITE ? WOOO      : BOOO;
 
     const int A             = us == WHITE ? A1        : A8;
-    const int B             = us == WHITE ? B1        : B8;
     const int C             = us == WHITE ? C1        : C8;
     const int D             = us == WHITE ? D1        : D8;
-    // const int E             = us == WHITE ? E1        : E8;
+
     const int F             = us == WHITE ? F1        : F8;
     const int G             = us == WHITE ? G1        : G8;
     const int H             = us == WHITE ? H1        : H8;
 
     // assume king is not in check
-    if ( OO       & pos->state->castling &&
-        (OO_MASK  & empties) == OO_MASK  &&
-        !squareIsAttacked(F, them, pos)  &&
-        !squareIsAttacked(G, them, pos))
-    {
-        *moveList++ = (H) | (F << 6) | (CASTLING << 12);
-    }
     if ( OOO      & pos->state->castling &&
         (OOO_MASK & empties) == OOO_MASK &&
         !squareIsAttacked(C, them, pos)  &&
@@ -194,7 +214,14 @@ uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList)
     {
         *moveList++ = (A) | (D << 6) | (CASTLING << 12);
     }
-    
+    if ( OO       & pos->state->castling &&
+        (OO_MASK  & empties) == OO_MASK  &&
+        !squareIsAttacked(F, them, pos)  &&
+        !squareIsAttacked(G, them, pos))
+    {
+        *moveList++ = (H) | (F << 6) | (CASTLING << 12);
+    }
+
     return moveList;
 }
 

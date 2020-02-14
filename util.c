@@ -39,16 +39,21 @@ void printMoveList(uint16_t *moveList)
     printf("\n");
 }
 
-void printBoard(int pieceTypes[])
+void printBoard(int pieceType[])
 {
     putchar('\n');
     int i;
     for (i = 0; i < SQUARE_N; i++)
     {
-        putchar(pieceTypeChar[pieceTypes[i]]);
+        if (i % 8 == 0)
+        {
+            putchar('8' - i / 8);
+        }
+        putchar(pieceTypeChar[pieceType[i]]);
         if (i % 8 == 7) 
         {
             putchar('\n');
         }
     }
+    printf(" abcdefgh\n\n");
 }

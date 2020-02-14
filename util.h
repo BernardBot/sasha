@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 void printU64(uint64_t board);
-void printBoard(int pieceTypes[]);
+void printBoard(int pieceType[]);
 void printMove(uint16_t move);
 void printMoveList(uint16_t *moveList);
 
