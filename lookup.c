@@ -40,15 +40,15 @@ uint16_t squareIsAttacked(int sq, int color, struct Position *pos)
 
     const uint64_t pawns   =  pos->piece[PAWN]                        & enemies;
     const uint64_t knights =  pos->piece[KNIGHT]                      & enemies;
+    const uint64_t king    =  pos->piece[KING]                        & enemies;
     const uint64_t bishops = (pos->piece[BISHOP] | pos->piece[QUEEN]) & enemies;
     const uint64_t rooks   = (pos->piece[ROOK]   | pos->piece[QUEEN]) & enemies;
-    const uint64_t king    =  pos->piece[KING]                        & enemies;
 
     return (pawnLookup(sq, color)     & pawns)   ||
            (knightLookup(sq)          & knights) ||
+           (kingLookup(sq)            & king)    ||
            (bishopLookup(sq, empties) & bishops) ||
-           (rookLookup(sq, empties)   & rooks)   ||
-           (kingLookup(sq)            & king);
+           (rookLookup(sq, empties)   & rooks);
 }
 
 uint64_t rand64()

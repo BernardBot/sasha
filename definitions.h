@@ -47,10 +47,13 @@ const uint64_t NILEAB, NILEGH;
 const int SHIFT[8];
 const uint64_t WRAP[8];
 
-const uint64_t WOO_MASK;
-const uint64_t WOOO_MASK;
-const uint64_t BOO_MASK;
-const uint64_t BOOO_MASK;
+const enum Castle OO[COLOR_N];
+const enum Castle OOO[COLOR_N];
+
+const uint64_t OO_MASK[COLOR_N];
+const uint64_t OOO_MASK[COLOR_N];
+
+const uint64_t BRANK[COLOR_N][8];
 
 const char *squareString[SQUARE_N];
 const char pieceTypeChar[PIECETYPE_N];

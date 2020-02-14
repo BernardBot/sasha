@@ -189,37 +189,24 @@ uint16_t* generatePieceMoves(struct Position *pos, uint16_t *moveList)
 uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList)
 {
     const uint64_t us      = pos->state->turn;
-    const uint64_t them    = !us;
-    const uint64_t empties = ~(pos->color[us] | pos->color[them]);
-
-    const uint64_t OO_MASK  = us == WHITE ? WOO_MASK  : BOO_MASK;
-    const uint64_t OOO_MASK = us == WHITE ? WOOO_MASK : BOOO_MASK;
-    
-    const int OO            = us == WHITE ? WOO       : BOO;
-    const int OOO           = us == WHITE ? WOOO      : BOOO;
-
-    const int A             = us == WHITE ? A1        : A8;
-    const int C             = us == WHITE ? C1        : C8;
-    const int D             = us == WHITE ? D1        : D8;
-
-    const int F             = us == WHITE ? F1        : F8;
-    const int G             = us == WHITE ? G1        : G8;
-    const int H             = us == WHITE ? H1        : H8;
+    const uint64_t empties = ~(pos->color[us] | pos->color[!us]);
 
     // assume king is not in check
-    if ( OOO      & pos->state->castling &&
-        (OOO_MASK & empties) == OOO_MASK &&
-        !squareIsAttacked(C, them, pos)  &&
-        !squareIsAttacked(D, them, pos))
+    if ( OOO[us]      & pos->state->castling              &&
+        (OOO_MASK[us] & empties) == OOO_MASK[us]          &&
+        (pos->pieceType[BRANK[us][A8]] % PIECE_N == ROOK) &&
+        !squareIsAttacked(BRANK[us][C8], !us, pos)        &&
+        !squareIsAttacked(BRANK[us][D8], !us, pos))
     {
-        *moveList++ = (A) | (D << 6) | (CASTLING << 12);
+        *moveList++ = (BRANK[us][E8]) | (BRANK[us][C8] << 6) | (CASTLING << 12);
     }
-    if ( OO       & pos->state->castling &&
-        (OO_MASK  & empties) == OO_MASK  &&
-        !squareIsAttacked(F, them, pos)  &&
-        !squareIsAttacked(G, them, pos))
+    if ( OO[us]       & pos->state->castling              &&
+        (OO_MASK[us]  & empties) == OO_MASK[us]           &&
+        (pos->pieceType[BRANK[us][H8]] % PIECE_N == ROOK) &&
+        !squareIsAttacked(BRANK[us][F8], !us, pos)        &&
+        !squareIsAttacked(BRANK[us][G8], !us, pos))
     {
-        *moveList++ = (H) | (F << 6) | (CASTLING << 12);
+        *moveList++ = (BRANK[us][E8]) | (BRANK[us][G8] << 6) | (CASTLING << 12);
     }
 
     return moveList;

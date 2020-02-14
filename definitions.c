@@ -57,10 +57,17 @@ const uint64_t WRAP[8] = {
     0xffffffffffffff00ull,
 };
 
-const uint64_t WOO_MASK  = 0x6000000000000000ull;
-const uint64_t WOOO_MASK = 0xe00000000000000ull;
-const uint64_t BOO_MASK  = 0x60ull;
-const uint64_t BOOO_MASK = 0xeull;
+const enum Castle OO[COLOR_N] = { WOO, BOO, };
+const enum Castle OOO[COLOR_N] = { WOOO, BOOO, };
+
+const uint64_t OO_MASK[COLOR_N] = { 0x6000000000000000ull, 0x60ull, };
+const uint64_t OOO_MASK[COLOR_N] = { 0xe00000000000000ull, 0xeull, };
+
+const uint64_t BRANK[COLOR_N][8] = 
+{
+    { A1, B1, C1, D1, E1, F1, G1, H1, },
+    { A8, B8, C8, D8, E8, F8, G8, H8, },
+};
 
 const char *squareString[SQUARE_N] = {
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
