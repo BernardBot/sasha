@@ -150,7 +150,6 @@ void undoMove(uint16_t move, struct Position *pos)
         pos->color[toColor]     ^= rookFromToSquare;
         pos->pieceType[rookFrom] = rookType;
         pos->pieceType[rookTo]   = EMPTY;
-
     }
 
     if (tag == PROMOTION)

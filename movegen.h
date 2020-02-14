@@ -6,9 +6,24 @@
 
 uint16_t* makePromotions(int from, int to, uint16_t* moveList);
 
-uint16_t* generatePawnMoves(struct Position *pos, uint16_t* moveList);
-uint16_t* generatePieceMoves(struct Position *pos, uint16_t *moveList);
-uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList);
+uint16_t* generatePawnMoves
+(
+    struct Position *pos, uint16_t *moveList, 
+    const int us, const int them, 
+    const uint64_t friends, const uint64_t enemies, const uint64_t empties
+);
+uint16_t* generatePieceMoves
+(
+    struct Position *pos, uint16_t *moveList, 
+    const int us, const int them, 
+    const uint64_t friends, const uint64_t enemies, const uint64_t empties, const uint64_t notFriends
+);
+uint16_t* generateCastleMoves
+(
+    struct Position *pos, uint16_t *moveList, 
+    const int us, const int them, 
+    const uint64_t empties
+);
 
 uint16_t* generatePseudoMoves(struct Position *pos, uint16_t *moveList);
 

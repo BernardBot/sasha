@@ -14,15 +14,13 @@ uint16_t* makePromotions(int from, int to, uint16_t* moveList)
     return moveList;
 }
 
-uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
+uint16_t* generatePawnMoves
+(
+    struct Position *pos, uint16_t *moveList, 
+    const int us, const int them, 
+    const uint64_t friends, const uint64_t enemies, const uint64_t empties
+)
 {
-    const int us   = pos->state->turn;
-    const int them = !us;
-
-    const uint64_t friends = pos->color[us];
-    const uint64_t enemies = pos->color[them];
-    const uint64_t empties = ~(friends | enemies);
-
     const uint64_t TRANK3 = us == WHITE ? RANK3 : RANK6;
     const uint64_t TRANK7 = us == WHITE ? RANK7 : RANK2;
 
@@ -115,16 +113,13 @@ uint16_t* generatePawnMoves(struct Position *pos, uint16_t *moveList)
     return moveList;
 }
 
-uint16_t* generatePieceMoves(struct Position *pos, uint16_t *moveList)
+uint16_t* generatePieceMoves
+(
+    struct Position *pos, uint16_t *moveList, 
+    const int us, const int them, 
+    const uint64_t friends, const uint64_t enemies, const uint64_t empties, const uint64_t notFriends
+)
 {
-    const int us   = pos->state->turn;
-    const int them = !us;
-
-    const uint64_t friends    = pos->color[us];
-    const uint64_t enemies    = pos->color[them];
-    const uint64_t empties    = ~(friends | enemies);
-    const uint64_t notFriends = ~friends;
- 
     uint64_t b, c;
     int from, to;
 
@@ -186,25 +181,27 @@ uint16_t* generatePieceMoves(struct Position *pos, uint16_t *moveList)
 
     return moveList;
 }
-uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList)
+uint16_t* generateCastleMoves
+(
+    struct Position *pos, uint16_t *moveList, 
+    const int us, const int them, 
+    const uint64_t empties
+)
 {
-    const uint64_t us      = pos->state->turn;
-    const uint64_t empties = ~(pos->color[us] | pos->color[!us]);
-
     // assume king is not in check
     if ( OOO[us]      & pos->state->castling              &&
         (OOO_MASK[us] & empties) == OOO_MASK[us]          &&
         (pos->pieceType[BRANK[us][A8]] % PIECE_N == ROOK) &&
-        !squareIsAttacked(BRANK[us][C8], !us, pos)        &&
-        !squareIsAttacked(BRANK[us][D8], !us, pos))
+        !squareIsAttacked(BRANK[us][C8], them, pos)       &&
+        !squareIsAttacked(BRANK[us][D8], them, pos))
     {
         *moveList++ = (BRANK[us][E8]) | (BRANK[us][C8] << 6) | (CASTLING << 12);
     }
     if ( OO[us]       & pos->state->castling              &&
         (OO_MASK[us]  & empties) == OO_MASK[us]           &&
         (pos->pieceType[BRANK[us][H8]] % PIECE_N == ROOK) &&
-        !squareIsAttacked(BRANK[us][F8], !us, pos)        &&
-        !squareIsAttacked(BRANK[us][G8], !us, pos))
+        !squareIsAttacked(BRANK[us][F8], them, pos)       &&
+        !squareIsAttacked(BRANK[us][G8], them, pos))
     {
         *moveList++ = (BRANK[us][E8]) | (BRANK[us][G8] << 6) | (CASTLING << 12);
     }
@@ -214,9 +211,17 @@ uint16_t* generateCastleMoves(struct Position *pos, uint16_t *moveList)
 
 uint16_t* generatePseudoMoves(struct Position *pos, uint16_t *moveList)
 {
-    moveList = generatePawnMoves(pos, moveList);
-    moveList = generatePieceMoves(pos, moveList);
-    moveList = generateCastleMoves(pos, moveList);
+    const int us   = pos->state->turn;
+    const int them = !us;
+
+    const uint64_t friends    = pos->color[us];
+    const uint64_t enemies    = pos->color[them];
+    const uint64_t empties    = ~(friends | enemies);
+    const uint64_t notFriends = ~friends;
+    
+    moveList = generatePawnMoves  (pos, moveList, us, them, friends, enemies, empties);
+    moveList = generatePieceMoves (pos, moveList, us, them, friends, enemies, empties, notFriends);
+    moveList = generateCastleMoves(pos, moveList, us, them,                   empties);
 
     return moveList;
 }

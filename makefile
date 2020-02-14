@@ -3,4 +3,4 @@ all:
 debug:
 	gcc -o debug main.c attacks.c definitions.c movegen.c position.c lookup.c util.c -g
 clean:
-	rm main
+	rm main debug
