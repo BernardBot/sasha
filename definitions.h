@@ -35,11 +35,10 @@ const uint64_t RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8;
 const uint64_t FILES[8];
 const uint64_t RANKS[8];
 
-// make these macros?
-uint64_t rank_bb(int sq);
-uint64_t file_bb(int sq);
-uint64_t shift_bb(uint64_t bb, int s);
-uint64_t sq_bb(int sq);
+#define rank_bb(sq) RANKS[7 - (sq >> 3)]
+#define file_bb(sq) FILES[sq & 7]
+#define shift_bb(bb, s) (s < 0 ? bb >> -s : bb << s)
+#define sq_bb(sq) (1ull << sq)
 
 const uint64_t NILEA, NILEH;
 const uint64_t NILEAB, NILEGH;

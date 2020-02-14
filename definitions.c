@@ -22,23 +22,6 @@ const uint64_t RANK8 = RANK1 >> 56;
 const uint64_t FILES[8] = { FILEA, FILEB, FILEC, FILED, FILEE, FILEF, FILEG, FILEH };
 const uint64_t RANKS[8] = { RANK1, RANK2, RANK3, RANK4, RANK5, RANK6, RANK7, RANK8 };
 
-uint64_t rank_bb(int sq)
-{
-    return RANKS[7 - (sq >> 3)];
-}
-uint64_t file_bb(int sq)
-{
-    return FILES[sq & 7];
-}
-uint64_t shift_bb(uint64_t bb, int s)
-{
-    return s < 0 ? bb >> -s : bb << s;
-}
-uint64_t sq_bb(int sq)
-{
-    return 1ull << sq;
-}
-
 const uint64_t NILEA = ~FILEA;
 const uint64_t NILEH = ~FILEH;
 

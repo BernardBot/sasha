@@ -165,7 +165,7 @@ void undoMove(uint16_t move, struct Position *pos)
     pos->state = pos->state->previousState;
 }
 
-void readFen(char *fen, struct Position *pos)
+void parseFen(char *fen, struct Position *pos)
 {
     int i, j, color, piece, pieceType;
     
@@ -195,7 +195,7 @@ void readFen(char *fen, struct Position *pos)
         {
             for (j = i + *fen - '0'; i < j; i++)
             {
-                pos->pieceType[i] = pieceType;
+                pos->pieceType[i] = EMPTY;
             }
         } else if (pieceType != -1)
         {
@@ -206,57 +206,59 @@ void readFen(char *fen, struct Position *pos)
             pos->piece[piece] |= sq_bb(i);
             pos->pieceType[i++] = pieceType;
         }
-        
     }
 
-    fen++;
+    while (*fen == ' ') fen++;
 
-    if (*fen == 'w')
+    if      (*fen == 'w') pos->state->turn = WHITE;
+    else if (*fen == 'b') pos->state->turn = BLACK;
+
+    while (*fen == 'w' || *fen == 'b') fen++;
+    while (*fen == ' ') fen++;
+
+    pos->state->castling = parseCastling(fen);
+
+    while (*fen == '-' || *fen == 'K' || *fen == 'k' || *fen == 'Q' || *fen == 'q') fen++;
+    while (*fen == ' ') fen++;
+
+    if (*fen == '-') pos->state->enpassant = -1;
+    else             pos->state->enpassant = parseSquare(*fen, *(fen + 1));
+
+    while (*fen == '-' || ('a' <= *fen && *fen <= 'h') || ('1' <= *fen && *fen <= '8')) fen++;
+    while (*fen == ' ') fen++;
+
+    pos->state->movecount = parseInteger(fen);
+
+    while ('0' <= *fen && *fen <= '9') fen++;
+    while (*fen == ' ') fen++;
+
+    pos->state->halfmovecount = parseInteger(fen);
+}
+
+int parseInteger(char *s)
+{
+    int i;
+    for (i = 0; '0' <= *s && *s <= '9'; s++, i *= 10)
     {
-        pos->state->turn = WHITE;
-    } else if (*fen == 'b')
-    {
-        pos->state->turn = BLACK;
+        i += *s - '0';
     }
+    return i / 10;
+}
 
-    fen++;
-    fen++;
+int parseSquare(char file, char rank)
+{
+    return (file - 'a') + (7 - (rank - '1')) * 8;
+}
 
-    for (pos->state->castling = 0; *fen != ' '; fen++)
+int parseCastling(char *s)
+{
+    int i;
+    for (i = 0; *s == 'k' || *s == 'K' || *s == 'q' || *s  == 'Q'; s++)
     {
-        if      (*fen == 'K') pos->state->castling |= WOO;
-        else if (*fen == 'Q') pos->state->castling |= WOOO;
-        else if (*fen == 'k') pos->state->castling |= BOO;
-        else if (*fen == 'q') pos->state->castling |= BOOO;
-    }
-
-    fen++;
-
-    if (*fen == '-')
-    {
-        pos->state->enpassant = -1;
-    } else
-    {
-        char f = *fen++;
-        char r = *fen;
-
-        pos->state->enpassant = (f - 'a') + (7 - (r - '1')) * 8;
-    }
-
-    fen++;
-    fen++;
-
-    for (i = 0; *fen != ' '; fen++, i *= 10)
-    {
-        i += *fen - '0';
-    }
-    pos->state->movecount = i / 10;
-
-    fen++;
-
-    for (i = 0; *fen; fen++, i *= 10)
-    {
-        i += *fen - '0';
-    }
-    pos->state->halfmovecount = i / 10;
+        if      (*s == 'K') i |= WOO;
+        else if (*s == 'Q') i |= WOOO;
+        else if (*s == 'k') i |= BOO;
+        else if (*s == 'q') i |= BOOO;
+     }
+     return i;
 }
