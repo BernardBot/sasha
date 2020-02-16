@@ -36,6 +36,6 @@ int parseInteger(char *s);
 int parseSquare(char file, char rank);
 int parseCastling(char *s);
 
-void parseFen(char *fen, struct Position *pos);
+char* parseFen(char *fen, struct Position *pos);
 
 #endif // POSITION_H_

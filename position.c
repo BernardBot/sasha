@@ -1,5 +1,6 @@
-#include <stdint.h>
+#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "util.h"
 #include "definitions.h"
 #include "position.h"
@@ -164,11 +165,11 @@ void undoMove(uint16_t move, struct Position *pos)
     pos->state = pos->state->previousState;
 }
 
-void parseFen(char *fen, struct Position *pos)
+char* parseFen(char *fen, struct Position *pos)
 {
     int i, j, color, piece, pieceType;
-    
-    for (i = 0; i < SQUARE_N && *fen != ' '; fen++)
+
+    for (i = 0; i < SQUARE_N && *fen && *fen != ' '; fen++)
     {
         switch (*fen)
         {
@@ -200,28 +201,41 @@ void parseFen(char *fen, struct Position *pos)
         {
             piece = pieceType  % PIECE_N;
             color = pieceType >= PIECE_N;
-            
+
             pos->color[color] |= sq_bb(i);
             pos->piece[piece] |= sq_bb(i);
             pos->pieceType[i++] = pieceType;
         }
     }
-    while (*fen == ' ') fen++;
+
+    while (*fen && *fen++ != ' ') ;
+
     if      (*fen == 'w') pos->state->turn = WHITE;
     else if (*fen == 'b') pos->state->turn = BLACK;
-    while (*fen == 'w' || *fen == 'b') fen++;
-    while (*fen == ' ') fen++;
-                          pos->state->castling = parseCastling(fen);
-    while (*fen == '-' || *fen == 'K' || *fen == 'k' || *fen == 'Q' || *fen == 'q') fen++;
-    while (*fen == ' ') fen++;
-    if (*fen == '-')      pos->state->enpassant = -1;
-    else                  pos->state->enpassant = parseSquare(*fen, *(fen + 1));
-    while (*fen == '-' || ('a' <= *fen && *fen <= 'h') || ('1' <= *fen && *fen <= '8')) fen++;
-    while (*fen == ' ') fen++;
-                          pos->state->movecount = parseInteger(fen);
-    while ('0' <= *fen && *fen <= '9') fen++;
-    while (*fen == ' ') fen++;
-                          pos->state->halfmovecount = parseInteger(fen);
+
+    while (*fen && *fen++ != ' ') ;
+
+    pos->state->castling = parseCastling(fen);
+
+    while (*fen && *fen++ != ' ') ;
+
+    if      (*fen == '-') pos->state->enpassant = -1;
+    else if (*fen)        pos->state->enpassant = parseSquare(*fen, *(fen + 1));
+
+    while (*fen && *fen++ != ' ') ;
+
+    pos->state->movecount = parseInteger(fen);
+
+    while (*fen && *fen++ != ' ') ;
+
+    pos->state->halfmovecount = parseInteger(fen);
+
+    pos->state->capturedPieceType = -1;
+    pos->state->capturedSquare    = -1;
+
+    while (*fen && *fen++ != ' ') ;
+
+    return fen;
 }
 
 int parseInteger(char *s)
