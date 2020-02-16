@@ -24,10 +24,10 @@ void printMove(uint16_t move)
     printf(" %s%s", squareString[from], squareString[to]);
 }
 
-void printMoveList(uint16_t *moveList)
+void printMoveList(uint16_t *moveList, const uint16_t *end)
 {
     int t;
-    for (t = *moveList & 0b111111; *moveList; moveList++)
+    for (t = *moveList & 0b111111; moveList < end; moveList++)
     {
         if (t != (*moveList & 0b111111))
         {

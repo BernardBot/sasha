@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdio.h>
+#include "util.h"
 #include "position.h"
 #include "lookup.h"
 #include "definitions.h"
@@ -17,7 +19,7 @@ uint16_t* makePromotions(int from, int to, uint16_t* moveList)
 uint16_t* generatePawnMoves
 (
     struct Position *pos, uint16_t *moveList, 
-    const int us, const int them, 
+    const int us,
     const uint64_t friends, const uint64_t enemies, const uint64_t empties
 )
 {
@@ -31,10 +33,10 @@ uint16_t* generatePawnMoves
     const uint64_t pawnsOn7    = pos->piece[PAWN] & friends &  TRANK7;
     const uint64_t pawnsNotOn7 = pos->piece[PAWN] & friends & ~TRANK7;
 
+    int to;
+
     uint64_t b1 = shift_bb(pawnsNotOn7, up) & empties;
     uint64_t b2 = shift_bb(b1 & TRANK3, up) & empties;
-
-    int to;
     while (b1)
     {
         to = __builtin_ctzll(b1);
@@ -48,12 +50,26 @@ uint16_t* generatePawnMoves
         b2 &= b2 - 1;
     }
 
+    b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & enemies;
+    b2 = shift_bb(pawnsNotOn7, upLeft ) & NILEH & enemies;
+    while (b1)
+    {
+        to = __builtin_ctzll(b1);
+        *moveList++ = (to - upRight) | (to << 6);
+        b1 &= b1 - 1;
+    }
+    while (b2)
+    {
+        to = __builtin_ctzll(b2);
+        *moveList++ = (to - upLeft) | (to << 6);
+        b2 &= b2 - 1;
+    }
+
     if (pawnsOn7)
     {
         uint64_t b1 = shift_bb(pawnsOn7, upRight) & NILEA & enemies;
         uint64_t b2 = shift_bb(pawnsOn7, upLeft ) & NILEH & enemies;
         uint64_t b3 = shift_bb(pawnsOn7, up)              & empties;
-
         while (b1)
         {
             to = __builtin_ctzll(b1);
@@ -74,28 +90,11 @@ uint16_t* generatePawnMoves
         }
     }
 
-    b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & enemies;
-    b2 = shift_bb(pawnsNotOn7, upLeft ) & NILEH & enemies;
-    
-    while (b1)
-    {
-        to = __builtin_ctzll(b1);
-        *moveList++ = (to - upRight) | (to << 6);
-        b1 &= b1 - 1;
-    }
-    while (b2)
-    {
-        to = __builtin_ctzll(b2);
-        *moveList++ = (to - upLeft) | (to << 6);
-        b2 &= b2 - 1;
-    }
-
     if (pos->state->enpassant != -1)
     {
         uint64_t ep = sq_bb(pos->state->enpassant);
-        uint64_t b1 = shift_bb(pawnsNotOn7, upRight) & ep;
-        uint64_t b2 = shift_bb(pawnsNotOn7, upLeft)  & ep;
-
+        uint64_t b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & ep;
+        uint64_t b2 = shift_bb(pawnsNotOn7, upLeft)  & NILEH & ep;
         while (b1)
         {
             to = __builtin_ctzll(b1);
@@ -116,8 +115,7 @@ uint16_t* generatePawnMoves
 uint16_t* generatePieceMoves
 (
     struct Position *pos, uint16_t *moveList, 
-    const int us, const int them, 
-    const uint64_t friends, const uint64_t enemies, const uint64_t empties, const uint64_t notFriends
+    const uint64_t friends, const uint64_t empties, const uint64_t notFriends
 )
 {
     uint64_t b, c;
@@ -192,6 +190,7 @@ uint16_t* generateCastleMoves
     if ( OOO[us]      & pos->state->castling              && // castling flag set?
         (OOO_MASK[us] & empties) == OOO_MASK[us]          && // squares between rook and king empty?
         (pos->pieceType[BRANK[us][A8]] % PIECE_N == ROOK) && // rook still on original square?
+        !squareIsAttacked(BRANK[us][E8], them, pos)       && 
         !squareIsAttacked(BRANK[us][C8], them, pos)       && // squares for king not attacked?
         !squareIsAttacked(BRANK[us][D8], them, pos))
     {
@@ -200,8 +199,9 @@ uint16_t* generateCastleMoves
     if ( OO[us]       & pos->state->castling              &&
         (OO_MASK[us]  & empties) == OO_MASK[us]           &&
         (pos->pieceType[BRANK[us][H8]] % PIECE_N == ROOK) &&
-        !squareIsAttacked(BRANK[us][F8], them, pos)       &&
-        !squareIsAttacked(BRANK[us][G8], them, pos))
+        !squareIsAttacked(BRANK[us][E8], them, pos)       && 
+        !squareIsAttacked(BRANK[us][F8], them, pos)       && 
+        !squareIsAttacked(BRANK[us][G8], them, pos))         // redundant when checking king in check anyway
     {
         *moveList++ = (BRANK[us][E8]) | (BRANK[us][G8] << 6) | (CASTLING << 12);
     }
@@ -218,11 +218,62 @@ uint16_t* generatePseudoMoves(struct Position *pos, uint16_t *moveList)
     const uint64_t enemies    = pos->color[them];
     const uint64_t empties    = ~(friends | enemies);
     const uint64_t notFriends = ~friends;
+
     
-    moveList = generatePawnMoves  (pos, moveList, us, them, friends, enemies, empties);
-    moveList = generatePieceMoves (pos, moveList, us, them, friends, enemies, empties, notFriends);
+    moveList = generatePawnMoves  (pos, moveList, us,       friends, enemies, empties);
+    moveList = generatePieceMoves (pos, moveList,           friends,          empties, notFriends);
     moveList = generateCastleMoves(pos, moveList, us, them,                   empties);
 
     return moveList;
+}
+
+uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
+{
+    const int us   = pos->state->turn;
+    const int them = !us;
+
+    uint16_t *legalList = moveList;
+    const uint16_t *end = generatePseudoMoves(pos, moveList);
+    struct State tempState;
+
+    uint64_t kingSquare = pos->piece[KING] & pos->color[us];
+    int kingSq          = __builtin_ctzll(kingSquare);
+
+    if (squareIsAttacked(kingSq, them, pos)) // we are in check
+    {
+        for (; moveList < end; moveList++)
+        {
+            doMove(*moveList, pos, &tempState);
+            if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos))
+            {
+                *legalList++ = *moveList;
+            }
+            undoMove(*moveList, pos);
+        }        
+    } else
+    {
+        uint64_t empties = ~(pos->color[us] | pos->color[them]);
+        uint64_t blockers = bishopLookup(kingSq, empties) | rookLookup(kingSq, empties);
+        int from;
+
+        for (; moveList < end; moveList++)
+        {
+            from = *moveList & 0b111111;
+            if (from == kingSq || sq_bb(from) & blockers || ((*moveList >> 12) & 0b11) == ENPASSANT)
+            {
+                doMove(*moveList, pos, &tempState);
+                if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos))
+                {
+                    *legalList++ = *moveList;
+                }
+                undoMove(*moveList, pos);
+            } else
+            {
+                *legalList++ = *moveList;
+            }
+        }
+    }
+
+    return legalList;
 }
 

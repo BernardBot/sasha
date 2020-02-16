@@ -33,10 +33,10 @@ uint64_t rookLookup(int sq, uint64_t empty)
     empty >>= 52; // 64 - 12;
     return ROOKATTACKS[sq][empty];
 }
-uint16_t squareIsAttacked(int sq, int color, struct Position *pos)
+uint16_t squareIsAttacked(int sq, int them, struct Position *pos)
 {
-    const uint64_t enemies =   pos->color[ color];
-    const uint64_t empties = ~(pos->color[!color] | enemies);
+    const uint64_t enemies =   pos->color[ them];
+    const uint64_t empties = ~(pos->color[!them] | enemies);
 
     const uint64_t pawns   =  pos->piece[PAWN]                        & enemies;
     const uint64_t knights =  pos->piece[KNIGHT]                      & enemies;
@@ -44,7 +44,7 @@ uint16_t squareIsAttacked(int sq, int color, struct Position *pos)
     const uint64_t bishops = (pos->piece[BISHOP] | pos->piece[QUEEN]) & enemies;
     const uint64_t rooks   = (pos->piece[ROOK]   | pos->piece[QUEEN]) & enemies;
 
-    return (pawnLookup(sq, color)     & pawns)   ||
+    return (pawnLookup(sq, !them)     & pawns)   ||
            (knightLookup(sq)          & knights) ||
            (kingLookup(sq)            & king)    ||
            (bishopLookup(sq, empties) & bishops) ||

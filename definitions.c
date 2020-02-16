@@ -46,7 +46,7 @@ const enum Castle OOO[COLOR_N] = { WOOO, BOOO, };
 const uint64_t OO_MASK[COLOR_N] = { 0x6000000000000000ull, 0x60ull, };
 const uint64_t OOO_MASK[COLOR_N] = { 0xe00000000000000ull, 0xeull, };
 
-const uint64_t BRANK[COLOR_N][8] = 
+const int BRANK[COLOR_N][8] = 
 {
     { A1, B1, C1, D1, E1, F1, G1, H1, },
     { A8, B8, C8, D8, E8, F8, G8, H8, },

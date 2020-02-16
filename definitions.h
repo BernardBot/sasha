@@ -52,7 +52,7 @@ const enum Castle OOO[COLOR_N];
 const uint64_t OO_MASK[COLOR_N];
 const uint64_t OOO_MASK[COLOR_N];
 
-const uint64_t BRANK[COLOR_N][8];
+const int BRANK[COLOR_N][8];
 
 const char *squareString[SQUARE_N];
 const char pieceTypeChar[PIECETYPE_N];
