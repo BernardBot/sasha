@@ -190,7 +190,6 @@ uint16_t* generateCastleMoves
     if ( OOO[us]      & pos->state->castling              && // castling flag set?
         (OOO_MASK[us] & empties) == OOO_MASK[us]          && // squares between rook and king empty?
         (pos->pieceType[BRANK[us][A8]] % PIECE_N == ROOK) && // rook still on original square?
-        !squareIsAttacked(BRANK[us][E8], them, pos)       && 
         !squareIsAttacked(BRANK[us][C8], them, pos)       && // squares for king not attacked?
         !squareIsAttacked(BRANK[us][D8], them, pos))
     {
@@ -199,9 +198,8 @@ uint16_t* generateCastleMoves
     if ( OO[us]       & pos->state->castling              &&
         (OO_MASK[us]  & empties) == OO_MASK[us]           &&
         (pos->pieceType[BRANK[us][H8]] % PIECE_N == ROOK) &&
-        !squareIsAttacked(BRANK[us][E8], them, pos)       && 
         !squareIsAttacked(BRANK[us][F8], them, pos)       && 
-        !squareIsAttacked(BRANK[us][G8], them, pos))         // redundant when checking king in check anyway
+        !squareIsAttacked(BRANK[us][G8], them, pos))
     {
         *moveList++ = (BRANK[us][E8]) | (BRANK[us][G8] << 6) | (CASTLING << 12);
     }
@@ -232,12 +230,20 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
     const int us   = pos->state->turn;
     const int them = !us;
 
+    const uint64_t friends    = pos->color[us];
+    const uint64_t enemies    = pos->color[them];
+    const uint64_t empties    = ~(friends | enemies);
+    const uint64_t notFriends = ~friends;
+
     uint16_t *legalList = moveList;
-    const uint16_t *end = generatePseudoMoves(pos, moveList);
+    uint16_t *end       = moveList;
     struct State tempState;
 
-    uint64_t kingSquare = pos->piece[KING] & pos->color[us];
+    uint64_t kingSquare = pos->piece[KING] & friends;
     int kingSq          = __builtin_ctzll(kingSquare);
+
+    end = generatePawnMoves (pos, end, us, friends, enemies, empties);
+    end = generatePieceMoves(pos, end,     friends, empties,          notFriends);
 
     if (squareIsAttacked(kingSq, them, pos)) // we are in check
     {
@@ -252,10 +258,8 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
         }        
     } else
     {
-        uint64_t empties = ~(pos->color[us] | pos->color[them]);
         uint64_t blockers = bishopLookup(kingSq, empties) | rookLookup(kingSq, empties);
         int from;
-
         for (; moveList < end; moveList++)
         {
             from = *moveList & 0b111111;
@@ -272,6 +276,7 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
                 *legalList++ = *moveList;
             }
         }
+        legalList = generateCastleMoves(pos, legalList, us, them, empties);
     }
 
     return legalList;
