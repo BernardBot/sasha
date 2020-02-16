@@ -1,5 +1,6 @@
 #include "util.h"
 #include "definitions.h"
+#include "position.h"
 #include <stdio.h>
 #include <stdint.h>
 
@@ -19,9 +20,11 @@ void printU64(uint64_t board)
 
 void printMove(uint16_t move)
 {
-    int from =  move       & 0b111111;
-    int to   = (move >> 6) & 0b111111;
-    printf(" %s%s", squareString[from], squareString[to]);
+    int from =  move        & 0b111111;
+    int to   = (move >> 6)  & 0b111111;
+    int tag  = (move >> 12) & 0b11;
+    int prom = (move >> 14) & 0b11;
+    printf(" %s%s %d %d", squareString[from], squareString[to], tag, prom);
 }
 
 void printMoveList(uint16_t *moveList, const uint16_t *end)
@@ -58,4 +61,15 @@ void printBoard(int pieceType[])
         }
     }
     printf("   a  b  c  d  e  f  g  h\n\n");
+}
+
+void printState(struct State state)
+{
+    printf("turn\t\t\t%d\n",            state.turn);
+    printf("enpassant\t\t%d\n",         state.enpassant);
+    printf("castling\t\t%d\n",          state.castling);
+    printf("movecount\t\t%d\n",         state.movecount);
+    printf("halfmovecount\t\t%d\n",     state.halfmovecount);
+    printf("capturedPieceType\t%d\n",   state.capturedPieceType);
+    printf("capturedSquare\t\t%d\n",    state.capturedSquare);
 }
