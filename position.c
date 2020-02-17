@@ -72,9 +72,12 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
         pos->color[fromColor]   ^= rookFromToSquare;
         pos->pieceType[rookFrom] = EMPTY;
         pos->pieceType[rookTo]   = rookType;
+
+        pos->state->zobrist ^= ZOBRISTPIECES[rookType][rookFrom] ^
+                               ZOBRISTPIECES[rookType][rookTo];
     }
 
-    if (fromPiece == PAWN)
+    if (fromPiece == PAWN) // pawns need extra work
     {
         if (tag == ENPASSANT)
         {
@@ -89,7 +92,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
             pos->state->capturedSquare    = epSq;
             pos->state->capturedPieceType = epType;
 
-            // update zobrist for pawn
+            // update zobrist for enpassant capture
+            pos->state->zobrist ^= ZOBRISTPIECES[PAWN][epSq]; // remove enpassant captured pawn
         } else if (tag == PROMOTION)
         {
             const int promPiece = move >> 14;
@@ -101,6 +105,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
             pos->pieceType[to]     = promType;
 
             // update zobrist for piece
+            pos->state->zobrist ^= ZOBRISTPIECES[PAWN]    [to] ^ // remove pawn
+                                   ZOBRISTPIECES[promType][to];  // place promotion piece
         } else if (to - from == 16 || to - from == -16) // update enpassant state
         {
             pos->state->enpassant = fromColor == WHITE ? to + 8 : to - 8;
