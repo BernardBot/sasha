@@ -131,7 +131,7 @@ void initLookup()
 {
     srand(0x5a54a); // set seed
 
-    int sq, pct, cstl;
+    int sq, pct, cstl, clr;
     for (sq = 0; sq < SQUARE_N; sq++)
     {
         PAWNATTACKS[WHITE][sq] = wPawnAttacks(sq_bb(sq));
@@ -154,6 +154,11 @@ void initLookup()
     {
         ZOBRISTCASTLES[cstl] = rand64();
     }
+
+    for (clr = 0; clr < COLOR_N; clr++)
+    {
+        ZOBRISTCOLOR[clr] = rand64();
+    }
 }
 
 uint64_t zobristKey(struct Position *pos)
@@ -172,6 +177,7 @@ uint64_t zobristKey(struct Position *pos)
     } 
 
     key ^= ZOBRISTCASTLES[pos->state->castling];
+    key ^= ZOBRISTCOLOR[pos->state->turn];
 
     return key;
 }

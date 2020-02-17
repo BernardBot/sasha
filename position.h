@@ -17,6 +17,8 @@ struct State
     int capturedPieceType;
     int capturedSquare;
 
+    uint64_t zobrist;
+
     struct State *previousState;
 };
 struct Position

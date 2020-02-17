@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "lookup.h"
 #include "util.h"
 #include "definitions.h"
 #include "position.h"
@@ -22,6 +23,15 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
 
     const uint64_t fromToSquare = sq_bb(from) | sq_bb(to);
 
+    newState->zobrist ^= pos->state->zobrist ^
+                         ZOBRISTCOLOR[pos->state->turn] ^
+                         ZOBRISTCASTLES[pos->state->castling];
+
+    if (pos->state->enpassant != -1)
+    {
+        newState->zobrist ^= ZOBRISTENPASSANT[pos->state->enpassant];
+    }
+
     // initialize new state
     newState->movecount         = pos->state->movecount     + pos->state->turn;
     newState->halfmovecount     = pos->state->halfmovecount + 1;
@@ -39,6 +49,11 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
     pos->pieceType[from]   = EMPTY;
     pos->pieceType[to]     = fromType;
 
+    pos->state->zobrist ^= ZOBRISTPIECES[EMPTY]   [from] ^ 
+                           ZOBRISTPIECES[fromType][from] ^ 
+                           ZOBRISTPIECES[fromType][to]   ^
+                           ZOBRISTCOLOR[pos->state->turn];
+
     if (toType != EMPTY) // a piece is captured
     {
         const int toPiece = toType % PIECE_N;
@@ -50,6 +65,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
 
         pos->state->capturedSquare    = to;
         pos->state->capturedPieceType = toType;
+
+        pos->state->zobrist ^= ZOBRISTPIECES[toType][to];
     } else if (tag == CASTLING)
     {
         // we have to move the rook (king already done)
@@ -104,6 +121,12 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
             pos->state->castling &= ~(OO[fromColor]);
         }
     }
+
+    pos->state->zobrist ^= ZOBRISTCASTLES[pos->state->castling];
+    if (pos->state->enpassant != -1) 
+    {
+        pos->state->zobrist  ^= ZOBRISTENPASSANT[pos->state->enpassant];
+    }
 }
 
 void undoMove(uint16_t move, struct Position *pos)
@@ -138,7 +161,6 @@ void undoMove(uint16_t move, struct Position *pos)
         pos->piece[capPiece] ^= capSquare;
         pos->color[capColor] ^= capSquare;
         pos->pieceType[pos->state->capturedSquare] = pos->state->capturedPieceType;
-
     } else if (tag == CASTLING)
     {
         // move the rook back
@@ -236,6 +258,8 @@ char* parseFen(char *fen, struct Position *pos)
     pos->state->capturedSquare    = -1;
 
     while (*fen && *fen++ != ' ') ;
+
+    pos->state->zobrist = zobristKey(pos);
 
     return fen;
 }
