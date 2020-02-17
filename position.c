@@ -23,22 +23,23 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
 
     const uint64_t fromToSquare = sq_bb(from) | sq_bb(to);
 
-    newState->zobrist ^= pos->state->zobrist ^
-                         ZOBRISTCOLOR[pos->state->turn] ^
-                         ZOBRISTCASTLES[pos->state->castling];
-
-    if (pos->state->enpassant != -1)
-    {
-        newState->zobrist ^= ZOBRISTENPASSANT[pos->state->enpassant];
-    }
+    newState->zobrist = pos->state->zobrist                     ^
+                        ZOBRISTCOLOR    [pos->state->turn]      ^
+                        ZOBRISTCOLOR    [!pos->state->turn]     ^
+                        ZOBRISTCASTLES  [pos->state->castling]  ^
+                        ZOBRISTENPASSANT[pos->state->enpassant] ^
+                        ZOBRISTPIECES   [fromType][from]        ^ 
+                        ZOBRISTPIECES   [fromType][to]          ^
+                        ZOBRISTPIECES   [EMPTY]   [from]        ^ 
+                        ZOBRISTPIECES   [EMPTY]   [to];
 
     // initialize new state
     newState->movecount         = pos->state->movecount     + pos->state->turn;
     newState->halfmovecount     = pos->state->halfmovecount + 1;
     newState->castling          = pos->state->castling;
-    newState->enpassant         = -1;
-    newState->capturedSquare    = -1;
-    newState->capturedPieceType = -1;
+    newState->enpassant         = NO_SQ;
+    newState->capturedSquare    = NO_SQ;
+    newState->capturedPieceType = NO_PIECETYPE;
     newState->turn              = !pos->state->turn; // watch out the color is updated
     newState->previousState     = pos->state;
     pos->state                  = newState; // creates the history of states
@@ -48,11 +49,6 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
     pos->color[fromColor] ^= fromToSquare;
     pos->pieceType[from]   = EMPTY;
     pos->pieceType[to]     = fromType;
-
-    pos->state->zobrist ^= ZOBRISTPIECES[EMPTY]   [from] ^ 
-                           ZOBRISTPIECES[fromType][from] ^ 
-                           ZOBRISTPIECES[fromType][to]   ^
-                           ZOBRISTCOLOR[pos->state->turn];
 
     if (toType != EMPTY) // a piece is captured
     {
@@ -66,7 +62,9 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
         pos->state->capturedSquare    = to;
         pos->state->capturedPieceType = toType;
 
-        pos->state->zobrist ^= ZOBRISTPIECES[toType][to];
+        pos->state->zobrist ^= ZOBRISTPIECES[toType][to] ^
+                               ZOBRISTPIECES[EMPTY] [to];
+
     } else if (tag == CASTLING)
     {
         // we have to move the rook (king already done)
@@ -122,11 +120,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
         }
     }
 
-    pos->state->zobrist ^= ZOBRISTCASTLES[pos->state->castling];
-    if (pos->state->enpassant != -1) 
-    {
-        pos->state->zobrist  ^= ZOBRISTENPASSANT[pos->state->enpassant];
-    }
+    pos->state->zobrist ^= ZOBRISTCASTLES  [pos->state->castling] ^
+                           ZOBRISTENPASSANT[pos->state->enpassant];
 }
 
 void undoMove(uint16_t move, struct Position *pos)
@@ -152,7 +147,7 @@ void undoMove(uint16_t move, struct Position *pos)
     pos->pieceType[from] = toType;
     pos->pieceType[to]   = EMPTY;
 
-    if (pos->state->capturedSquare != -1)
+    if (pos->state->capturedSquare != NO_SQ)
     {
         const int capPiece = pos->state->capturedPieceType  % PIECE_N;
         const int capColor = pos->state->capturedPieceType >= PIECE_N;
@@ -211,8 +206,8 @@ char* parseFen(char *fen, struct Position *pos)
         case 'p': pieceType = BLACK_PAWN;   break;
         case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8':
                   pieceType = EMPTY;        break;
-        case '/': pieceType = -1;           break;
-        default:  pieceType = -1;           break;
+        case '/': pieceType = NO_PIECETYPE; break;
+        default:  pieceType = NO_PIECETYPE; break;
         }
 
         if (pieceType == EMPTY)
@@ -221,7 +216,7 @@ char* parseFen(char *fen, struct Position *pos)
             {
                 pos->pieceType[i] = EMPTY;
             }
-        } else if (pieceType != -1)
+        } else if (pieceType != NO_PIECETYPE)
         {
             piece = pieceType  % PIECE_N;
             color = pieceType >= PIECE_N;
@@ -243,7 +238,7 @@ char* parseFen(char *fen, struct Position *pos)
 
     while (*fen && *fen++ != ' ') ;
 
-    if      (*fen == '-') pos->state->enpassant = -1;
+    if      (*fen == '-') pos->state->enpassant = NO_SQ;
     else if (*fen)        pos->state->enpassant = parseSquare(*fen, *(fen + 1));
 
     while (*fen && *fen++ != ' ') ;
@@ -254,8 +249,8 @@ char* parseFen(char *fen, struct Position *pos)
 
     pos->state->halfmovecount = parseInteger(fen);
 
-    pos->state->capturedPieceType = -1;
-    pos->state->capturedSquare    = -1;
+    pos->state->capturedPieceType = NO_PIECETYPE;
+    pos->state->capturedSquare    = NO_SQ;
 
     while (*fen && *fen++ != ' ') ;
 

@@ -90,7 +90,7 @@ uint16_t* generatePawnMoves
         }
     }
 
-    if (pos->state->enpassant != -1)
+    if (pos->state->enpassant != NO_SQ)
     {
         uint64_t ep = sq_bb(pos->state->enpassant);
         uint64_t b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & ep;
