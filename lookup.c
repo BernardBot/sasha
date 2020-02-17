@@ -144,7 +144,7 @@ void initLookup()
 
         ZOBRISTENPASSANT[sq] = rand64();
 
-        for (pct = 0; pct < PIECETYPE_N; pct++)
+        for (pct = 0; pct < EMPTY; pct++)
         {
             ZOBRISTPIECES[pct][sq] = rand64();
         }
@@ -160,25 +160,24 @@ void initLookup()
         ZOBRISTCASTLES[cstl] = rand64();
     }
 
-    for (clr = 0; clr < COLOR_N; clr++)
-    {
-        ZOBRISTCOLOR[clr] = rand64();
-    }
 }
 
 uint64_t zobristKey(struct Position *pos)
 {
-    uint64_t key = 0;
+    uint64_t key;
     int sq;
 
-    for (sq = 0; sq < SQUARE_N; sq++)
+    for (key = sq = 0; sq < SQUARE_N; sq++)
     {
-        key ^= ZOBRISTPIECES[pos->pieceType[sq]][sq];
+        if (pos->pieceType[sq] != EMPTY)
+        {
+            key ^= ZOBRISTPIECES[pos->pieceType[sq]][sq];
+        }
     }
 
-    key ^= ZOBRISTENPASSANT[pos->state->enpassant] ^
-           ZOBRISTCASTLES  [pos->state->castling]  ^
-           ZOBRISTCOLOR    [pos->state->turn];
+    key ^= pos->state->turn ^
+           ZOBRISTENPASSANT[pos->state->enpassant] ^
+           ZOBRISTCASTLES  [pos->state->castling];
 
     return key;
 }
