@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "search.h"
 
 // use strstr and strncmp
 void uciGo(char *s, struct Position *pos)
@@ -55,11 +56,8 @@ void uciGo(char *s, struct Position *pos)
         while (*s && *s++ != ' ') ;
     }
     // send back info
-    uint16_t moveList[256] = {0};
-    uint16_t *end = generateLegalMoves(pos, moveList);
-    // send best move back
     printf("bestmove ");
-    printMove(moveList[0]);
+    printMove(bestMove(pos, 6));
     printf("\n");
 }
 void uciPos(char *s, struct Position *pos, struct State stateList[])

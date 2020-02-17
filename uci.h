@@ -5,8 +5,6 @@
 
 #define FENSTART "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-int startsWith(char *s, char *t);
-
 void uciGo(char *s, struct Position *pos);
 void uciPos(char *s, struct Position *pos, struct State stateList[]);
 void uciLoop(struct Position *pos, struct State stateList[]);

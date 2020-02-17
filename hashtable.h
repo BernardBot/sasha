@@ -6,15 +6,21 @@
 #define TABLESIZE 65536 // 2 ^ 16
 #define TABLESHIFT 48 // 64 - 16
 
+enum Flag {EXACT, LOWERBOUND, UPPERBOUND};
+
+#define INF 0xffffff
+
 struct Entry {
     uint64_t key;
     uint16_t move;
     int eval;
+    int depth;
+    int flag;
 };
 
 struct Entry TTABLE[TABLESIZE];
 
-int  getTT(uint64_t key, uint16_t *move, int *eval);
-void putTT(uint64_t key, uint16_t  move, int  eval);
+int  getTT(uint64_t key, uint16_t *move, int *eval, int *depth, int *flag);
+void putTT(uint64_t key, uint16_t  move, int  eval, int  depth, int  flag);
 
 #endif

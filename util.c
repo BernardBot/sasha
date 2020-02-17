@@ -72,4 +72,5 @@ void printState(struct State state)
     printf("halfmovecount\t\t%d\n",     state.halfmovecount);
     printf("capturedPieceType\t%d\n",   state.capturedPieceType);
     printf("capturedSquare\t\t%d\n",    state.capturedSquare);
+    printf("zobrist\t\t%llu\n",         state.zobrist);
 }

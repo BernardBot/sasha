@@ -284,11 +284,9 @@ uint64_t perft(int depth, struct Position *pos)
 {
     uint16_t moveList[256];
     uint16_t *begin = moveList;
-    uint16_t *end;
+    uint16_t *end   = generateLegalMoves(pos, moveList);
     uint64_t nodes;
     struct State newState;
-
-    end = generateLegalMoves(pos, moveList);
 
     if (depth <  1) return 0; // don't shoot yourself in the foot
     if (depth == 1) return end - begin;
