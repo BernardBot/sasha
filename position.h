@@ -32,6 +32,8 @@ struct Position
 void   doMove(uint16_t move, struct Position *pos, struct State *newState);
 void undoMove(uint16_t move, struct Position *pos);
 
+void clearPos(struct Position *pos);
+
 int parseInteger(char *s);
 int parseSquare(char file, char rank);
 int parseCastling(char *s);

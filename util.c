@@ -24,7 +24,7 @@ void printMove(uint16_t move)
     int to   = (move >> 6)  & 0b111111;
     int tag  = (move >> 12) & 0b11;
     int prom = (move >> 14) & 0b11;
-    printf(" %s%s %d %d", squareString[from], squareString[to], tag, prom);
+    printf("%s%s", squareString[from], squareString[to]);
 }
 
 void printMoveList(uint16_t *moveList, const uint16_t *end)

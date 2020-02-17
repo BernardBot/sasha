@@ -169,6 +169,8 @@ char* parseFen(char *fen, struct Position *pos)
 {
     int i, j, color, piece, pieceType;
 
+    clearPos(pos);
+
     for (i = 0; i < SQUARE_N && *fen && *fen != ' '; fen++)
     {
         switch (*fen)
@@ -264,4 +266,14 @@ int parseCastling(char *s)
         else if (*s == 'q') i |= BOOO;
     }
     return i;
+}
+
+void clearPos(struct Position *pos)
+{
+    struct State *state = pos->state;
+
+    memset(pos,   0, sizeof(*pos));
+    memset(state, 0, sizeof(*state));
+
+    pos->state = state;
 }

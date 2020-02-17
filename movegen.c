@@ -250,7 +250,7 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
         for (; moveList < end; moveList++)
         {
             doMove(*moveList, pos, &tempState);
-            if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos))
+            if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos)) // make sure king is not attacked
             {
                 *legalList++ = *moveList;
             }
@@ -282,3 +282,24 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
     return legalList;
 }
 
+uint64_t perft(int depth, struct Position *pos)
+{
+    uint16_t moveList[256];
+    uint16_t *begin = moveList;
+    uint16_t *end;
+    uint64_t nodes;
+    struct State newState;
+
+    end = generateLegalMoves(pos, moveList);
+    
+    if (depth == 1) return end - begin;
+
+    for (nodes = 0; begin < end; begin++)
+    {
+        doMove(*begin, pos, &newState);
+        nodes += perft(depth - 1, pos);
+        undoMove(*begin, pos);
+    }
+
+    return nodes;
+}
