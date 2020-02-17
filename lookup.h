@@ -19,8 +19,7 @@ uint64_t ROOKATTACKS[SQUARE_N][4096]; // 4096 = 2 ^ 12
 
 uint64_t ZOBRISTPIECES[PIECETYPE_N][SQUARE_N];
 uint64_t ZOBRISTCASTLES[CASTLE_N];
-uint64_t ZOBRISTENPASSANT[SQUARE_N + 2]; // includes NO_SQ
-uint64_t ZOBRISTCOLOR[COLOR_N];
+uint64_t ZOBRISTENPASSANT[NO_SQ + 1]; // includes NO_SQ
 
 #define pawnLookup(sq, color) PAWNATTACKS[color][sq]
 #define knightLookup(sq) KNIGHTATTACKS[sq]

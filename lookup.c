@@ -142,15 +142,13 @@ void initLookup()
         initMagic(sq, &rookMasks[sq],   &rookMagics[sq],   ROOKATTACKS[sq],   1);
         initMagic(sq, &bishopMasks[sq], &bishopMagics[sq], BISHOPATTACKS[sq], 0);
 
-        ZOBRISTENPASSANT[sq] = rand64();
-
-        for (pct = 0; pct < EMPTY; pct++)
+        for (pct = 0; pct < EMPTY; pct++) // excludes EMPTY
         {
             ZOBRISTPIECES[pct][sq] = rand64();
         }
     }
 
-    for (sq = 0; sq < SQUARE_N + 2; sq++) // includes the NO_SQ
+    for (sq = 0; sq < NO_SQ + 1; sq++) // includes the NO_SQ
     {
         ZOBRISTENPASSANT[sq] = rand64();
     }
@@ -159,7 +157,6 @@ void initLookup()
     {
         ZOBRISTCASTLES[cstl] = rand64();
     }
-
 }
 
 uint64_t zobristKey(struct Position *pos)

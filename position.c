@@ -23,14 +23,13 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
 
     const uint64_t fromToSquare = sq_bb(from) | sq_bb(to);
 
-    newState->zobrist = pos->state->zobrist                     ^ 
-                        !pos->state->turn                       ^
-                        ZOBRISTCASTLES  [pos->state->castling]  ^
-                        ZOBRISTENPASSANT[pos->state->enpassant] ^
-                        ZOBRISTPIECES   [fromType][from]        ^ 
-                        ZOBRISTPIECES   [fromType][to];
-
     // initialize new state
+    newState->zobrist           = pos->state->zobrist                     ^ 
+                                 !pos->state->turn                        ^
+                                  ZOBRISTCASTLES  [pos->state->castling]  ^
+                                  ZOBRISTENPASSANT[pos->state->enpassant] ^
+                                  ZOBRISTPIECES   [fromType][from]        ^ 
+                                  ZOBRISTPIECES   [fromType][to];
     newState->movecount         = pos->state->movecount     + pos->state->turn;
     newState->halfmovecount     = pos->state->halfmovecount + 1;
     newState->castling          = pos->state->castling;
@@ -73,8 +72,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
         pos->pieceType[rookFrom] = EMPTY;
         pos->pieceType[rookTo]   = rookType;
 
-        pos->state->zobrist ^= ZOBRISTPIECES[rookType][rookFrom] ^
-                               ZOBRISTPIECES[rookType][rookTo];
+        pos->state->zobrist     ^= ZOBRISTPIECES[rookType][rookFrom] ^
+                                   ZOBRISTPIECES[rookType][rookTo];
     }
 
     if (fromPiece == PAWN) // pawns need extra work
@@ -105,8 +104,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
             pos->pieceType[to]     = promType;
 
             // update zobrist for piece
-            pos->state->zobrist ^= ZOBRISTPIECES[PAWN]    [to] ^ // remove pawn
-                                   ZOBRISTPIECES[promType][to];  // place promotion piece
+            pos->state->zobrist   ^= ZOBRISTPIECES[PAWN]    [to] ^ // remove pawn
+                                     ZOBRISTPIECES[promType][to];  // place promotion piece
         } else if (to - from == 16 || to - from == -16) // update enpassant state
         {
             pos->state->enpassant = fromColor == WHITE ? to + 8 : to - 8;

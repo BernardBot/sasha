@@ -239,8 +239,8 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
     uint16_t *end       = moveList;
     struct State tempState;
 
-    uint64_t kingSquare = pos->piece[KING] & friends;
-    int kingSq          = __builtin_ctzll(kingSquare);
+    const uint64_t kingSquare = pos->piece[KING] & friends;
+    const int kingSq          = __builtin_ctzll(kingSquare);
 
     end = generatePawnMoves (pos, end, us, friends, enemies, empties);
     end = generatePieceMoves(pos, end,     friends, empties,          notFriends);
@@ -258,12 +258,10 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
         }        
     } else
     {
-        uint64_t blockers = bishopLookup(kingSq, empties) | rookLookup(kingSq, empties);
-        int from;
+        const uint64_t blockers = bishopLookup(kingSq, empties) | rookLookup(kingSq, empties);
         for (; moveList < end; moveList++)
         {
-            from = *moveList & 0b111111;
-            if (from == kingSq || sq_bb(from) & blockers || ((*moveList >> 12) & 0b11) == ENPASSANT)
+            if ((*moveList & 0b111111) == kingSq || sq_bb(*moveList & 0b111111) & blockers || ((*moveList >> 12) & 0b11) == ENPASSANT)
             {
                 doMove(*moveList, pos, &tempState);
                 if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos))
@@ -284,7 +282,7 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
 
 uint64_t perft(int depth, struct Position *pos)
 {
-    uint16_t moveList[512];
+    uint16_t moveList[256];
     uint16_t *begin = moveList;
     uint16_t *end;
     uint64_t nodes;
