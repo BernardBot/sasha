@@ -17,9 +17,13 @@ uint64_t rookMagics[SQUARE_N];
 uint64_t rookMasks[SQUARE_N];
 uint64_t ROOKATTACKS[SQUARE_N][4096]; // 4096 = 2 ^ 12
 
-uint64_t pawnLookup(int sq, int color);
-uint64_t knightLookup(int sq);
-uint64_t kingLookup(int sq);
+uint64_t ZOBRISTPIECES[PIECETYPE_N][SQUARE_N];
+uint64_t ZOBRISTCASTLES[CASTLE_N];
+uint64_t ZOBRISTENPASSANT[SQUARE_N];
+
+#define pawnLookup(sq, color) PAWNATTACKS[color][sq]
+#define knightLookup(sq) KNIGHTATTACKS[sq]
+#define kingLookup(sq) KINGATTACKS[sq]
 uint64_t bishopLookup(int sq, uint64_t empty);
 uint64_t rookLookup(int sq, uint64_t empty);
 
@@ -30,5 +34,7 @@ uint64_t rand64Sparse();
 int popcount(uint64_t x);
 void initMagic(int sq, uint64_t *mask, uint64_t *magic, uint64_t attackTable[], int isRook);
 void initLookup();
+
+uint64_t zobristKey(struct Position *pos);
 
 #endif

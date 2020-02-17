@@ -1,24 +1,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "lookup.h"
 #include "definitions.h"
 #include "attacks.h"
 #include "position.h"
 #include "util.h"
 
-uint64_t pawnLookup(int sq, int color)
-{
-    return PAWNATTACKS[color][sq];
-}
-uint64_t knightLookup(int sq)
-{
-    return KNIGHTATTACKS[sq];
-}
-uint64_t kingLookup(int sq)
-{
-    return KINGATTACKS[sq];
-}
 uint64_t bishopLookup(int sq, uint64_t empty)
 {
     empty  &= bishopMasks[sq];
@@ -140,16 +129,49 @@ void initMagic(int sq, uint64_t *mask, uint64_t *magic, uint64_t attackTable[], 
 
 void initLookup()
 {
-    int sq;
-    uint64_t sq_board;
-    for (sq = 0, sq_board = 1ull; sq < SQUARE_N; sq++, sq_board <<= 1)
+    srand(0x5a54a); // set seed
+
+    int sq, pct, cstl;
+    for (sq = 0; sq < SQUARE_N; sq++)
     {
-        PAWNATTACKS[WHITE][sq] = wPawnAttacks(sq_board);
-        PAWNATTACKS[BLACK][sq] = bPawnAttacks(sq_board);
-        KINGATTACKS[sq]        = kingAttacks(sq_board);
-        KNIGHTATTACKS[sq]      = knightAttacks(sq_board);
+        PAWNATTACKS[WHITE][sq] = wPawnAttacks(sq_bb(sq));
+        PAWNATTACKS[BLACK][sq] = bPawnAttacks(sq_bb(sq));
+        KINGATTACKS[sq]        = kingAttacks(sq_bb(sq));
+        KNIGHTATTACKS[sq]      = knightAttacks(sq_bb(sq));
 
         initMagic(sq, &rookMasks[sq],   &rookMagics[sq],   ROOKATTACKS[sq],   1);
         initMagic(sq, &bishopMasks[sq], &bishopMagics[sq], BISHOPATTACKS[sq], 0);
+
+        ZOBRISTENPASSANT[sq] = rand64();
+
+        for (pct = 0; pct < PIECETYPE_N; pct++)
+        {
+            ZOBRISTPIECES[pct][sq] = rand64();
+        }
     }
+
+    for (cstl = 0; cstl < CASTLE_N; cstl++)
+    {
+        ZOBRISTCASTLES[cstl] = rand64();
+    }
+}
+
+uint64_t zobristKey(struct Position *pos)
+{
+    uint64_t key = 0;
+    int sq;
+
+    for (sq = 0; sq < SQUARE_N; sq++)
+    {
+        key ^= ZOBRISTPIECES[pos->pieceType[sq]][sq];
+    }
+
+    if (pos->state->enpassant != -1)
+    {
+        key ^= ZOBRISTENPASSANT[pos->state->enpassant];
+    } 
+
+    key ^= ZOBRISTCASTLES[pos->state->castling];
+
+    return key;
 }
