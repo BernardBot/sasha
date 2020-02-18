@@ -25,7 +25,7 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
 
     // initialize new state
     newState->zobrist           = pos->state->zobrist                     ^ 
-                                 !pos->state->turn                        ^
+                                  ZOBRISTCOLOR    [pos->state->turn]      ^
                                   ZOBRISTCASTLES  [pos->state->castling]  ^
                                   ZOBRISTENPASSANT[pos->state->enpassant] ^
                                   ZOBRISTPIECES   [fromType][from]        ^ 
@@ -124,7 +124,8 @@ void doMove(uint16_t move, struct Position *pos, struct State *newState)
         }
     }
 
-    pos->state->zobrist ^= ZOBRISTCASTLES  [pos->state->castling] ^
+    pos->state->zobrist ^= ZOBRISTCOLOR    [pos->state->turn]     ^
+                           ZOBRISTCASTLES  [pos->state->castling] ^
                            ZOBRISTENPASSANT[pos->state->enpassant];
 }
 

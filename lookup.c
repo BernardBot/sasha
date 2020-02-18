@@ -157,6 +157,11 @@ void initLookup()
     {
         ZOBRISTCASTLES[cstl] = rand64();
     }
+
+    for (clr = 0; clr < COLOR_N; clr++)
+    {
+        ZOBRISTCOLOR[clr] = rand64();
+    }
 }
 
 uint64_t zobristKey(struct Position *pos)
@@ -172,7 +177,7 @@ uint64_t zobristKey(struct Position *pos)
         }
     }
 
-    key ^= pos->state->turn ^
+    key ^= ZOBRISTCOLOR    [pos->state->turn]      ^
            ZOBRISTENPASSANT[pos->state->enpassant] ^
            ZOBRISTCASTLES  [pos->state->castling];
 
