@@ -27,17 +27,17 @@ void printMove(uint16_t move)
     printf("%s%s", squareString[from], squareString[to]);
 }
 
-void printMoveList(uint16_t *moveList, const uint16_t *end)
+void printMoveList(uint16_t *begin, const uint16_t *end)
 {
     int t;
-    for (t = *moveList & 0b111111; moveList < end; moveList++)
+    for (t = *begin & 0b111111; begin < end; begin++)
     {
-        if (t != (*moveList & 0b111111))
+        if (t != (*begin & 0b111111))
         {
             printf("\n");
-            t = *moveList & 0b111111;
+            t = *begin & 0b111111;
         }
-        printMove(*moveList);
+        printMove(*begin);
     }
     printf("\n");
 }
