@@ -65,12 +65,12 @@ void printBoard(int pieceType[])
 
 void printState(struct State state)
 {
-    printf("turn\t\t\t%d\n",            state.turn);
-    printf("enpassant\t\t%d\n",         state.enpassant);
-    printf("castling\t\t%d\n",          state.castling);
-    printf("movecount\t\t%d\n",         state.movecount);
-    printf("halfmovecount\t\t%d\n",     state.halfmovecount);
+    printf("turn             \t%d\n",   state.turn);
+    printf("enpassant        \t%d\n",   state.enpassant);
+    printf("castling         \t%d\n",   state.castling);
+    printf("movecount        \t%d\n",   state.movecount);
+    printf("halfmovecount    \t%d\n",   state.halfmovecount);
     printf("capturedPieceType\t%d\n",   state.capturedPieceType);
-    printf("capturedSquare\t\t%d\n",    state.capturedSquare);
-    printf("zobrist\t\t%llu\n",         state.zobrist);
+    printf("capturedSquare   \t%d\n",   state.capturedSquare);
+    printf("zobrist          \t%llu\n", state.zobrist);
 }
