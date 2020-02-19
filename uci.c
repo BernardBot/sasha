@@ -96,17 +96,15 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
     if (strncmp(s, "position", 8)) return;
     while (*s && *s++ != ' ') ;
 
-    if (0 == strcmp(s, "startpos"))
+    if (0 == strncmp(s, "startpos", 8))
     {
         parseFen(FENSTART, pos);
-        return;
+
+    } else if (0 == strncmp(s, "fen", 3))
+    {
+        s = parseFen(s, pos); // needs to clear the board
     }
-
-    if (strncmp(s, "fen",      3)) return;
     while (*s && *s++ != ' ') ;
-
-    // pointer can go too far if some fields are not specified
-    s = parseFen(s, pos); // needs to clear the board
 
     if (strncmp(s, "moves",    5)) return;
     while (*s && *s++ != ' ') ;
@@ -169,13 +167,14 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
         }
 
         // skip whitespace
-        if (*s == ' ') s++;
+        while (*s == ' ') s++;
     }
 
 }
 void uciLoop(struct Position *pos, struct State stateList[])
 {
     char s[8192];
+    FILE *logfile;
 
     while (fgets(s, 8192, stdin)) // scanf is bad, splits at whitespace
     {
@@ -201,6 +200,11 @@ void uciLoop(struct Position *pos, struct State stateList[])
             return;
         }
         fflush(stdout); // don't forget to flush
+        // log to file
+        logfile = fopen("logfile", "a");
+        fprintf(logfile, "%s", s);
+        fclose(logfile);
+    
     }
 }
 
