@@ -88,7 +88,18 @@ void uciGo(char *s, struct Position *pos)
 
     bMove = bestMove(pos, uciInfo);
 
-    printf("bestmove "); printMove(bMove); printf("\n");
+    printf("bestmove "); printMove(bMove); 
+
+    if (((bMove >> 12) & 0b11) == PROMOTION)
+    {
+        int prom = (bMove >> 14) & 0b11;
+        if (prom == QUEEN)  printf("q");
+        if (prom == ROOK)   printf("r");
+        if (prom == KNIGHT) printf("n");
+        if (prom == BISHOP) printf("b");
+    }
+
+    printf("\n");
 }
 void uciPos(char *s, struct Position *pos, struct State stateList[])
 {
