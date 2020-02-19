@@ -8,8 +8,6 @@
 
 enum Flag {EXACT, LOWERBOUND, UPPERBOUND};
 
-#define INF 0xffffff
-
 struct Entry {
     uint64_t key;
     uint16_t move;
@@ -22,5 +20,8 @@ struct Entry TTABLE[TABLESIZE];
 
 int  getTT(uint64_t key, uint16_t *move, int *eval, int *depth, int *flag);
 void putTT(uint64_t key, uint16_t  move, int  eval, int  depth, int  flag);
+
+int evalFromTT(int eval, int height);
+int evalToTT  (int eval, int height);
 
 #endif

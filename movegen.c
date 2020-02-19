@@ -282,7 +282,7 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
 
 uint64_t perft(int depth, struct Position *pos)
 {
-    uint16_t moveList[256];
+    uint16_t moveList[MAX_MOVES];
     uint16_t *begin = moveList;
     uint16_t *end   = generateLegalMoves(pos, moveList);
     uint64_t nodes;
