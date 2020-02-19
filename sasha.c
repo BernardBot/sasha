@@ -23,25 +23,7 @@ int main()
     struct State stateList[256];
     pos.state = &firstState;
 
-    char *fen = "8/8/8/8/8/2K5/7R/k7 w - - 0 1";
-    parseFen(fen, &pos);
-    // 1 move is 2 halfmoves
-    // mate in 5 is halfmoves 10/11 moves
-
-    // printBoard(pos.pieceType);
-    // int eval = search(&pos, 10, -INF, INF);
-    // printf("%d %d %d\n", eval, eval - INF, INF);
-
-    // struct Info info;
-    // printMove(bestMove(&pos, info));
-
-    // struct State newState;
-    // doMove((A2) | (A3 << 6), &pos, &newState);
-    // printState(*pos.state);
-
-    // char *fen2 = "rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 2";
-    // parseFen(fen2, &pos);
-    // printState(*pos.state);
+    parseFen(FENSTART, &pos);
 
     uciLoop(&pos, stateList);
 

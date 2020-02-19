@@ -23,12 +23,12 @@ void initUciInfo()
 }
 
 // use strstr and strncmp
-void uciGo(char *s, struct Position *pos)
+struct State* uciGo(char *s, struct Position *pos, struct State *stateListP)
 {
     unsigned int startTime;
     uint16_t bMove;
 
-    if (strncmp(s, "go", 2)) return;
+    if (strncmp(s, "go", 2)) return stateListP;
     while (*s && *s++ != ' ') ;
 
     // parse input
@@ -89,26 +89,30 @@ void uciGo(char *s, struct Position *pos)
     bMove = bestMove(pos, uciInfo);
 
     printf("bestmove "); printMove(bMove); printf("\n");
+
+    doMove(bMove, pos, stateListP++);
+
+    return stateListP;
 }
-void uciPos(char *s, struct Position *pos, struct State stateList[])
+struct State* uciPos(char *s, struct Position *pos, struct State *stateListP)
 {
     // we need to reset the position first
-    if (strncmp(s, "position", 8)) return;
+    if (strncmp(s, "position", 8)) return stateListP;
     while (*s && *s++ != ' ') ;
 
     if (0 == strcmp(s, "startpos"))
     {
         parseFen(FENSTART, pos);
-        return;
+        return stateListP;
     }
 
-    if (strncmp(s, "fen",      3)) return;
+    if (strncmp(s, "fen",      3)) return stateListP;
     while (*s && *s++ != ' ') ;
 
     // pointer can go too far if some fields are not specified
     s = parseFen(s, pos); // needs to clear the board
 
-    if (strncmp(s, "moves",    5)) return;
+    if (strncmp(s, "moves",    5)) return stateListP;
     while (*s && *s++ != ' ') ;
 
     uint16_t legalList[MAX_MOVES];
@@ -118,14 +122,13 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
 
     char f0, r0, f1, r1;
     int from, to, tag, prom;
-    int stateP = 0;
     int legal;
     while (*s)
     {
-        if ('h' < *s && *s < 'a') return; f0 = *s++;
-        if ('8' < *s && *s < '1') return; r0 = *s++;
-        if ('h' < *s && *s < 'a') return; f1 = *s++;
-        if ('8' < *s && *s < '1') return; r1 = *s++;
+        if ('h' < *s && *s < 'a') return stateListP; f0 = *s++;
+        if ('8' < *s && *s < '1') return stateListP; r0 = *s++;
+        if ('h' < *s && *s < 'a') return stateListP; f1 = *s++;
+        if ('8' < *s && *s < '1') return stateListP; r1 = *s++;
 
         from = parseSquare(f0, r0);
         to   = parseSquare(f1, r1);
@@ -162,18 +165,19 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
 
         if (legal)
         {
-            doMove(move, pos, &stateList[stateP++]);
+            doMove(move, pos, stateListP++);
         } else
         {
-            return; //illegal move;
+            return stateListP; //illegal move;
         }
 
         // skip whitespace
         if (*s == ' ') s++;
     }
 
+    return stateListP;
 }
-void uciLoop(struct Position *pos, struct State stateList[])
+struct State* uciLoop(struct Position *pos, struct State *stateListP)
 {
     char s[8192];
 
@@ -181,7 +185,7 @@ void uciLoop(struct Position *pos, struct State stateList[])
     {
         if        (0 == strncmp(s, "ucinewgame", 10))
         {
-            uciPos("position startpos", pos, stateList);
+            stateListP = uciPos("position startpos", pos, stateListP);
         } else if (0 == strncmp(s, "uci", 3))
         {
             printf("id name Sasha\n");
@@ -192,16 +196,18 @@ void uciLoop(struct Position *pos, struct State stateList[])
             printf("readyok\n");
         } else if (0 == strncmp(s, "position", 8))
         {
-            uciPos(s, pos, stateList);
+            stateListP = uciPos(s, pos, stateListP);
         } else if (0 == strncmp(s, "go", 2))
         {
-            uciGo(s, pos);
+            stateListP = uciGo(s, pos, stateListP);
         } else if (0 == strncmp(s, "quit", 4))
         {
-            return;
+            return stateListP;
         }
         fflush(stdout); // don't forget to flush
     }
+
+    return stateListP;
 }
 
 unsigned int gettimems()
