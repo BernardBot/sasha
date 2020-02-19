@@ -16,9 +16,9 @@ struct Info uciInfo;
 
 void initUciInfo();
 
-struct State* uciGo  (char *s, struct Position *pos, struct State *stateListP);
-struct State* uciPos (char *s, struct Position *pos, struct State *stateListP);
-struct State* uciLoop(         struct Position *pos, struct State *stateListP);
+void uciGo(char *s, struct Position *pos);
+void uciPos(char *s, struct Position *pos, struct State stateList[]);
+void uciLoop(struct Position *pos, struct State stateList[]);
 
 unsigned int gettimems();
 
