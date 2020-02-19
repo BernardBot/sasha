@@ -111,7 +111,7 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
     if (strncmp(s, "moves",    5)) return;
     while (*s && *s++ != ' ') ;
 
-    uint16_t legalList[256];
+    uint16_t legalList[MAX_MOVES];
     uint16_t *legalBegin;
     uint16_t *legalEnd;
     uint16_t move;
