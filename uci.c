@@ -187,6 +187,10 @@ void uciLoop(struct Position *pos, struct State stateList[])
     char s[8192];
     FILE *logfile;
 
+    // clear logfile contents
+    logfile = fopen("logfile", "w");
+    fclose(logfile);
+
     while (fgets(s, 8192, stdin)) // scanf is bad, splits at whitespace
     {
         if        (0 == strncmp(s, "ucinewgame", 10))
