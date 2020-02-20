@@ -113,6 +113,7 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
 
     } else if (0 == strncmp(s, "fen", 3))
     {
+        while (*s && *s++ != ' ') ;
         s = parseFen(s, pos); // needs to clear the board
     }
     while (*s && *s++ != ' ') ;
@@ -185,12 +186,7 @@ void uciPos(char *s, struct Position *pos, struct State stateList[])
 void uciLoop(struct Position *pos, struct State stateList[])
 {
     char s[8192];
-    FILE *logfile;
-
-    // clear logfile contents
-    logfile = fopen("logfile", "w");
-    fclose(logfile);
-
+    
     while (fgets(s, 8192, stdin)) // scanf is bad, splits at whitespace
     {
         if        (0 == strncmp(s, "ucinewgame", 10))
@@ -215,11 +211,6 @@ void uciLoop(struct Position *pos, struct State stateList[])
             return;
         }
         fflush(stdout); // don't forget to flush
-        // log to file
-        logfile = fopen("logfile", "a");
-        fprintf(logfile, "%s", s);
-        fclose(logfile);
-    
     }
 }
 
