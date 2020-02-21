@@ -8,28 +8,42 @@
 #include <stdlib.h>
 #include "uci.h"
 
+uint16_t pvList[MAX_PLY];
+
 int evalPos(struct Position *pos)
 {
     return (1 - 2 * pos->state->turn) *
     (
-           3 * ((popcount(pos->piece[KNIGHT] & pos->color[WHITE])) - (popcount(pos->piece[KNIGHT] & pos->color[BLACK]))) +
-           5 * ((popcount(pos->piece[ROOK]   & pos->color[WHITE])) - (popcount(pos->piece[ROOK]   & pos->color[BLACK]))) +
-           3 * ((popcount(pos->piece[BISHOP] & pos->color[WHITE])) - (popcount(pos->piece[BISHOP] & pos->color[BLACK]))) +
-           9 * ((popcount(pos->piece[QUEEN]  & pos->color[WHITE])) - (popcount(pos->piece[QUEEN]  & pos->color[BLACK]))) +
-         100 * ((popcount(pos->piece[KING]   & pos->color[WHITE])) - (popcount(pos->piece[KING]   & pos->color[BLACK]))) +
-               ((popcount(pos->piece[PAWN]   & pos->color[WHITE])) - (popcount(pos->piece[PAWN]   & pos->color[BLACK])))
+           300 * ((popcount(pos->piece[KNIGHT] & pos->color[WHITE])) - (popcount(pos->piece[KNIGHT] & pos->color[BLACK]))) +
+           500 * ((popcount(pos->piece[ROOK]   & pos->color[WHITE])) - (popcount(pos->piece[ROOK]   & pos->color[BLACK]))) +
+           300 * ((popcount(pos->piece[BISHOP] & pos->color[WHITE])) - (popcount(pos->piece[BISHOP] & pos->color[BLACK]))) +
+           900 * ((popcount(pos->piece[QUEEN]  & pos->color[WHITE])) - (popcount(pos->piece[QUEEN]  & pos->color[BLACK]))) +
+           100 * ((popcount(pos->piece[PAWN]   & pos->color[WHITE])) - (popcount(pos->piece[PAWN]   & pos->color[BLACK])))
     );
 }
 uint16_t bestMove(struct Position *pos, struct Info info)
 {
     unsigned int startTime = gettimems(), depth;
-    for (depth = 0; gettimems() - startTime < 100; depth++)
+    uint16_t ttMove; int ttEval, ttDepth, ttFlag;
+
+    for (depth = 1; gettimems() - startTime < 1000; depth++)
     {
         search(pos, depth, 0, -MATE, MATE);
+
+        getTT(pos->state->zobrist, &ttMove, &ttEval, &ttDepth, &ttFlag);
+
+        printf("info depth %d seldepth %d score cp %d nodes 0 time %d ", depth, depth, ttEval, gettimems() - startTime);
+
+        printf("pv");
+        for (int i = 0; i < depth; i++)
+        {
+            printf(" "); printMove(pvList[i]);
+        }
+        printf("\n");
+
+        fflush(stdout); // don't forget to flush
     }
 
-    uint16_t ttMove; int ttEval, ttDepth, ttFlag;
-    getTT(pos->state->zobrist, &ttMove, &ttEval, &ttDepth, &ttFlag);
 
     return ttMove;
 }
@@ -71,7 +85,11 @@ int search(struct Position *pos, int depth, int height, int alpha, int beta)
 
         eval  = MAX(eval, nega);
 
-        if (eval > alpha) bestMove = *begin;
+        if (eval > alpha) 
+        {
+            bestMove = *begin;
+            pvList[height] = bestMove;
+        }
 
         alpha = MAX(eval, alpha);
 
