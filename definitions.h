@@ -68,4 +68,8 @@ const int BRANK[COLOR_N][FILE_N];
 const char *squareString[SQUARE_N];
 const char pieceTypeChar[PIECETYPE_N];
 
+// search lookup tables
+int PIECEVALUE [PIECE_N];
+int PIECESQUARE[PIECE_N][SQUARE_N];
+
 #endif // DEFINITIONS_H_

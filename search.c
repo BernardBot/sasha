@@ -4,6 +4,7 @@
 #include "position.h"
 #include "movegen.h"
 #include "lookup.h"
+#include "definitions.h"
 #include "hashtable.h"
 #include <stdlib.h>
 #include "uci.h"
@@ -33,11 +34,11 @@ int evalPos(struct Position *pos)
     return (1 - 2 * pos->state->turn) * 
     (
            sqEval +
-           100 * ((popcount(pos->piece[PAWN]   & pos->color[WHITE])) - (popcount(pos->piece[PAWN]   & pos->color[BLACK]))) +
-           320 * ((popcount(pos->piece[KNIGHT] & pos->color[WHITE])) - (popcount(pos->piece[KNIGHT] & pos->color[BLACK]))) +
-           330 * ((popcount(pos->piece[BISHOP] & pos->color[WHITE])) - (popcount(pos->piece[BISHOP] & pos->color[BLACK]))) +
-           500 * ((popcount(pos->piece[ROOK]   & pos->color[WHITE])) - (popcount(pos->piece[ROOK]   & pos->color[BLACK]))) +
-           900 * ((popcount(pos->piece[QUEEN]  & pos->color[WHITE])) - (popcount(pos->piece[QUEEN]  & pos->color[BLACK])))
+           PIECEVALUE[PAWN]   * ((popcount(pos->piece[PAWN]   & pos->color[WHITE])) - (popcount(pos->piece[PAWN]   & pos->color[BLACK]))) +
+           PIECEVALUE[KNIGHT] * ((popcount(pos->piece[KNIGHT] & pos->color[WHITE])) - (popcount(pos->piece[KNIGHT] & pos->color[BLACK]))) +
+           PIECEVALUE[BISHOP] * ((popcount(pos->piece[BISHOP] & pos->color[WHITE])) - (popcount(pos->piece[BISHOP] & pos->color[BLACK]))) +
+           PIECEVALUE[ROOK]   * ((popcount(pos->piece[ROOK]   & pos->color[WHITE])) - (popcount(pos->piece[ROOK]   & pos->color[BLACK]))) +
+           PIECEVALUE[QUEEN]  * ((popcount(pos->piece[QUEEN]  & pos->color[WHITE])) - (popcount(pos->piece[QUEEN]  & pos->color[BLACK])))
     );
 }
 uint16_t bestMove(struct Position *pos, struct Info info)
@@ -132,67 +133,3 @@ int search(struct Position *pos, int depth, int height, int alpha, int beta)
 
     return ttEval;
 }
-
-int PIECESQUARE[PIECE_N][SQUARE_N] = 
-{
-    {
--20,-10,-10, -5, -5,-10,-10,-20,
--10,  0,  0,  0,  0,  0,  0,-10,
--10,  0,  5,  5,  5,  5,  0,-10,
- -5,  0,  5,  5,  5,  5,  0, -5,
-  0,  0,  5,  5,  5,  5,  0, -5,
--10,  5,  5,  5,  5,  5,  0,-10,
--10,  0,  5,  0,  0,  0,  0,-10,
--20,-10,-10, -5, -5,-10,-10,-20
-    },
-    {
-  0,  0,  0,  0,  0,  0,  0,  0,
-  5, 10, 10, 10, 10, 10, 10,  5,
- -5,  0,  0,  0,  0,  0,  0, -5,
- -5,  0,  0,  0,  0,  0,  0, -5,
- -5,  0,  0,  0,  0,  0,  0, -5,
- -5,  0,  0,  0,  0,  0,  0, -5,
- -5,  0,  0,  0,  0,  0,  0, -5,
-  0,  0,  0,  5,  5,  0,  0,  0        
-    },
-    {
--20,-10,-10,-10,-10,-10,-10,-20,
--10,  0,  0,  0,  0,  0,  0,-10,
--10,  0,  5, 10, 10,  5,  0,-10,
--10,  5,  5, 10, 10,  5,  5,-10,
--10,  0, 10, 10, 10, 10,  0,-10,
--10, 10, 10, 10, 10, 10, 10,-10,
--10,  5,  0,  0,  0,  0,  5,-10,
--20,-10,-10,-10,-10,-10,-10,-20        
-    },
-    {
--50,-40,-30,-30,-30,-30,-40,-50,
--40,-20,  0,  0,  0,  0,-20,-40,
--30,  0, 10, 15, 15, 10,  0,-30,
--30,  5, 15, 20, 20, 15,  5,-30,
--30,  0, 15, 20, 20, 15,  0,-30,
--30,  5, 10, 15, 15, 10,  5,-30,
--40,-20,  0,  5,  5,  0,-20,-40,
--50,-40,-30,-30,-30,-30,-40,-50        
-    },
-    {
--30,-40,-40,-50,-50,-40,-40,-30,
--30,-40,-40,-50,-50,-40,-40,-30,
--30,-40,-40,-50,-50,-40,-40,-30,
--30,-40,-40,-50,-50,-40,-40,-30,
--20,-30,-30,-40,-40,-30,-30,-20,
--10,-20,-20,-20,-20,-20,-20,-10,
- 20, 20,  0,  0,  0,  0, 20, 20,
- 20, 30, 10,  0,  0, 10, 30, 20
-    },
-    {
- 0,  0,  0,  0,  0,  0,  0,  0,
-50, 50, 50, 50, 50, 50, 50, 50,
-10, 10, 20, 30, 30, 20, 10, 10,
- 5,  5, 10, 25, 25, 10,  5,  5,
- 0,  0,  0, 20, 20,  0,  0,  0,
- 5, -5,-10,  0,  0,-10, -5,  5,
- 5, 10, 10,-20,-20, 10, 10,  5,
- 0,  0,  0,  0,  0,  0,  0,  0        
-    }
-};

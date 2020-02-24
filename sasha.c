@@ -20,7 +20,7 @@ int main()
 
     struct Position pos = {0};
     struct State firstState = {0};
-    struct State stateList[256];
+    struct State stateList[MAX_PLY];
     pos.state = &firstState;
 
     parseFen(FENSTART, &pos);
