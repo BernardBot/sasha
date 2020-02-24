@@ -65,9 +65,9 @@ const char *squareString[SQUARE_N] = {
 const char pieceTypeChar[PIECETYPE_N] = "QRBNKPqrbnkp.";
 
 // QUEEN, ROOK, BISHOP, KNIGHT, KING, PAWN
-int PIECEVALUE[PIECE_N] = { 900, 500, 330, 320, MATE, 100 };
+const int PIECEVALUE[PIECE_N] = { 900, 500, 330, 320, MATE, 100 };
 
-int PIECESQUARE[PIECE_N][SQUARE_N] =
+const int PIECESQUARE[PIECE_N][SQUARE_N] =
 {
     {
 -20,-10,-10, -5, -5,-10,-10,-20,
