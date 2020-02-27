@@ -10,7 +10,8 @@ uint16_t* generatePawnMoves
 (
     struct Position *pos, uint16_t *moveList, 
     const int us,
-    const uint64_t friends, const uint64_t enemies, const uint64_t empties
+    const uint64_t friends, const uint64_t enemies, const uint64_t empties,
+    const int quiet
 );
 uint16_t* generatePieceMoves
 (

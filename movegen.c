@@ -20,7 +20,8 @@ uint16_t* generatePawnMoves
 (
     struct Position *pos, uint16_t *moveList, 
     const int us,
-    const uint64_t friends, const uint64_t enemies, const uint64_t empties
+    const uint64_t friends, const uint64_t enemies, const uint64_t empties,
+    const int quiet
 )
 {
     const uint64_t TRANK3 = us == WHITE ? RANK3 : RANK6;
@@ -33,79 +34,84 @@ uint16_t* generatePawnMoves
     const uint64_t pawnsOn7    = pos->piece[PAWN] & friends &  TRANK7;
     const uint64_t pawnsNotOn7 = pos->piece[PAWN] & friends & ~TRANK7;
 
+    uint64_t b1, b2, b3, ep;
     int to;
 
-    uint64_t b1 = shift_bb(pawnsNotOn7, up) & empties;
-    uint64_t b2 = shift_bb(b1 & TRANK3, up) & empties;
-    while (b1)
+    if (quiet)
     {
-        to = __builtin_ctzll(b1);
-        *moveList++ = (to - up) | (to << 6);
-        b1 &= b1 - 1;
-    }
-    while (b2)
-    {
-        to = __builtin_ctzll(b2);
-        *moveList++ = (to - up - up) | (to << 6);
-        b2 &= b2 - 1;
-    }
-
-    b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & enemies;
-    b2 = shift_bb(pawnsNotOn7, upLeft ) & NILEH & enemies;
-    while (b1)
-    {
-        to = __builtin_ctzll(b1);
-        *moveList++ = (to - upRight) | (to << 6);
-        b1 &= b1 - 1;
-    }
-    while (b2)
-    {
-        to = __builtin_ctzll(b2);
-        *moveList++ = (to - upLeft) | (to << 6);
-        b2 &= b2 - 1;
-    }
-
-    if (pawnsOn7)
-    {
-        uint64_t b1 = shift_bb(pawnsOn7, upRight) & NILEA & enemies;
-        uint64_t b2 = shift_bb(pawnsOn7, upLeft ) & NILEH & enemies;
-        uint64_t b3 = shift_bb(pawnsOn7, up)              & empties;
+        b1 = shift_bb(pawnsNotOn7, up) & empties;
+        b2 = shift_bb(b1 & TRANK3, up) & empties;
         while (b1)
         {
             to = __builtin_ctzll(b1);
-            moveList = makePromotions(to - upRight, to, moveList);
+            *moveList++ = (to - up) | (to << 6);
             b1 &= b1 - 1;
         }
         while (b2)
         {
             to = __builtin_ctzll(b2);
-            moveList = makePromotions(to - upLeft, to, moveList);
+            *moveList++ = (to - up - up) | (to << 6);
             b2 &= b2 - 1;
         }
-        while (b3)
-        {
-            to = __builtin_ctzll(b3);
-            moveList = makePromotions(to - up, to, moveList);
-            b3 &= b3 - 1;
-        }
-    }
-
-    if (pos->state->enpassant != NO_SQ)
+    } else
     {
-        uint64_t ep = sq_bb(pos->state->enpassant);
-        uint64_t b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & ep;
-        uint64_t b2 = shift_bb(pawnsNotOn7, upLeft)  & NILEH & ep;
+        b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & enemies;
+        b2 = shift_bb(pawnsNotOn7, upLeft ) & NILEH & enemies;
         while (b1)
         {
             to = __builtin_ctzll(b1);
-            *moveList++ = (to - upRight) | (to << 6) | (ENPASSANT << 12);
+            *moveList++ = (to - upRight) | (to << 6);
             b1 &= b1 - 1;
         }
         while (b2)
         {
             to = __builtin_ctzll(b2);
-            *moveList++ = (to - upLeft) | (to << 6) | (ENPASSANT << 12);
+            *moveList++ = (to - upLeft) | (to << 6);
             b2 &= b2 - 1;
+        }
+
+        if (pawnsOn7)
+        {
+            b1 = shift_bb(pawnsOn7, upRight) & NILEA & enemies;
+            b2 = shift_bb(pawnsOn7, upLeft ) & NILEH & enemies;
+            b3 = shift_bb(pawnsOn7, up)              & empties;
+            while (b1)
+            {
+                to = __builtin_ctzll(b1);
+                moveList = makePromotions(to - upRight, to, moveList);
+                b1 &= b1 - 1;
+            }
+            while (b2)
+            {
+                to = __builtin_ctzll(b2);
+                moveList = makePromotions(to - upLeft, to, moveList);
+                b2 &= b2 - 1;
+            }
+            while (b3)
+            {
+                to = __builtin_ctzll(b3);
+                moveList = makePromotions(to - up, to, moveList);
+                b3 &= b3 - 1;
+            }
+        }
+
+        if (pos->state->enpassant != NO_SQ)
+        {
+            ep = sq_bb(pos->state->enpassant);
+            b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & ep;
+            b2 = shift_bb(pawnsNotOn7, upLeft)  & NILEH & ep;
+            while (b1)
+            {
+                to = __builtin_ctzll(b1);
+                *moveList++ = (to - upRight) | (to << 6) | (ENPASSANT << 12);
+                b1 &= b1 - 1;
+            }
+            while (b2)
+            {
+                to = __builtin_ctzll(b2);
+                *moveList++ = (to - upLeft) | (to << 6) | (ENPASSANT << 12);
+                b2 &= b2 - 1;
+            }
         }
     }
 
@@ -115,7 +121,7 @@ uint16_t* generatePawnMoves
 uint16_t* generatePieceMoves
 (
     struct Position *pos, uint16_t *moveList, 
-    const uint64_t friends, const uint64_t empties, const uint64_t notFriends
+    const uint64_t friends, const uint64_t empties, const uint64_t targets
 )
 {
     uint64_t b, c;
@@ -125,7 +131,7 @@ uint16_t* generatePieceMoves
     while (b)
     {
         from = __builtin_ctzll(b);
-        c = knightLookup(from) & notFriends;
+        c = knightLookup(from) & targets;
         while (c)
         {
             to = __builtin_ctzll(c);
@@ -139,7 +145,7 @@ uint16_t* generatePieceMoves
     while (b)
     {
         from = __builtin_ctzll(b);
-        c = kingLookup(from) & notFriends;
+        c = kingLookup(from) & targets;
         while (c)
         {
             to = __builtin_ctzll(c);
@@ -153,7 +159,7 @@ uint16_t* generatePieceMoves
     while (b)
     {
         from = __builtin_ctzll(b);
-        c = rookLookup(from, empties) & notFriends;
+        c = rookLookup(from, empties) & targets;
         while (c)
         {
             to = __builtin_ctzll(c);
@@ -167,7 +173,7 @@ uint16_t* generatePieceMoves
     while (b)
     {
         from = __builtin_ctzll(b);
-        c = bishopLookup(from, empties) & notFriends;
+        c = bishopLookup(from, empties) & targets;
         while (c)
         {
             to = __builtin_ctzll(c);
@@ -218,7 +224,8 @@ uint16_t* generatePseudoMoves(struct Position *pos, uint16_t *moveList)
     const uint64_t notFriends = ~friends;
 
     
-    moveList = generatePawnMoves  (pos, moveList, us,       friends, enemies, empties);
+    moveList = generatePawnMoves  (pos, moveList, us,       friends, enemies, empties, 0);
+    moveList = generatePawnMoves  (pos, moveList, us,       friends, enemies, empties, 1);
     moveList = generatePieceMoves (pos, moveList,           friends,          empties, notFriends);
     moveList = generateCastleMoves(pos, moveList, us, them,                   empties);
 
@@ -242,8 +249,12 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
     const uint64_t kingSquare = pos->piece[KING] & friends;
     const int kingSq          = __builtin_ctzll(kingSquare);
 
-    end = generatePawnMoves (pos, end, us, friends, enemies, empties);
-    end = generatePieceMoves(pos, end,     friends, empties,          notFriends);
+    // noisy moves
+    end = generatePawnMoves (pos, end, us, friends, enemies, empties, 0);
+    end = generatePieceMoves(pos, end,     friends, empties,          enemies);
+    // quiet moves
+    end = generatePawnMoves (pos, end, us, friends, enemies, empties, 1);
+    end = generatePieceMoves(pos, end,     friends, empties,          empties);
 
     if (squareIsAttacked(kingSq, them, pos)) // we are in check
     {
