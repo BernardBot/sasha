@@ -73,6 +73,17 @@ uint16_t bestMove(struct Position *pos, struct Info info)
 int qsearch(struct Position *pos, int height, int alpha, int beta)
 {
     int eval = evalPos(pos);
+
+    if (eval >= beta)
+    {
+        return eval;
+    }
+
+    if (eval > alpha)
+    {
+        alpha = eval;
+    }
+
     int best = eval;
 
     uint16_t moveList[MAX_MOVES];
