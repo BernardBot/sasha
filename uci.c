@@ -25,7 +25,6 @@ void initUciInfo()
 // use strstr and strncmp
 void uciGo(char *s, struct Position *pos)
 {
-    unsigned int startTime;
     uint16_t bMove;
 
     if (strncmp(s, "go", 2)) return;
@@ -77,7 +76,7 @@ void uciGo(char *s, struct Position *pos)
         } else if (0 == strncmp(s, "movetime", 8))
         {
             while (*s && *s++ != ' ') ;
-            uciInfo.movetime = atoi(s);
+            uciInfo.movetime = atoi(s) - 100;
         } else if (0 == strncmp(s, "infinite", 8))
         {
             while (*s && *s++ != ' ') ;
