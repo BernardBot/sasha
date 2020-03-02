@@ -291,6 +291,61 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
     return legalList;
 }
 
+uint16_t* generateNoisyMoves(struct Position *pos, uint16_t *moveList)
+{
+    const int us   = pos->state->turn;
+    const int them = !us;
+
+    const uint64_t friends    = pos->color[us];
+    const uint64_t enemies    = pos->color[them];
+    const uint64_t empties    = ~(friends | enemies);
+    const uint64_t notFriends = ~friends;
+
+    uint16_t *legalList = moveList;
+    uint16_t *end       = moveList;
+    struct State tempState;
+
+    const uint64_t kingSquare = pos->piece[KING] & friends;
+    const int kingSq          = __builtin_ctzll(kingSquare);
+
+    // noisy moves
+    end = generatePawnMoves (pos, end, us, friends, enemies, empties, 0);
+    end = generatePieceMoves(pos, end,     friends, empties,          enemies);
+
+    if (squareIsAttacked(kingSq, them, pos)) // we are in check
+    {
+        for (; moveList < end; moveList++)
+        {
+            doMove(*moveList, pos, &tempState);
+            if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos)) // make sure king is not attacked
+            {
+                *legalList++ = *moveList;
+            }
+            undoMove(*moveList, pos);
+        }        
+    } else
+    {
+        const uint64_t blockers = bishopLookup(kingSq, empties) | rookLookup(kingSq, empties);
+        for (; moveList < end; moveList++)
+        {
+            if ((*moveList & 0b111111) == kingSq || sq_bb(*moveList & 0b111111) & blockers || ((*moveList >> 12) & 0b11) == ENPASSANT)
+            {
+                doMove(*moveList, pos, &tempState);
+                if (!squareIsAttacked(__builtin_ctzll(pos->piece[KING] & pos->color[us]), them, pos))
+                {
+                    *legalList++ = *moveList;
+                }
+                undoMove(*moveList, pos);
+            } else
+            {
+                *legalList++ = *moveList;
+            }
+        }
+    }
+
+    return legalList;
+}
+
 uint64_t perft(int depth, struct Position *pos)
 {
     uint16_t moveList[MAX_MOVES];

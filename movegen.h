@@ -27,6 +27,7 @@ uint16_t* generateCastleMoves
 
 uint16_t* generatePseudoMoves(struct Position *pos, uint16_t *moveList);
 uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList);
+uint16_t* generateNoisyMoves(struct Position *pos, uint16_t *moveList);
 
 uint64_t perft(int depth, struct Position *pos);
 

@@ -10,6 +10,7 @@
 #include "uci.h"
 
 uint16_t pvList[MAX_PLY];
+int nodes;
 
 int evalPos(struct Position *pos)
 {
@@ -26,7 +27,7 @@ int evalPos(struct Position *pos)
                 sqEval += PIECESQUARE[piece][     sq];
             } else
             {
-                sqEval -= PIECESQUARE[piece][64 - sq];
+                sqEval -= PIECESQUARE[piece][63 - sq];
             }
         }        
     }
@@ -48,11 +49,12 @@ uint16_t bestMove(struct Position *pos, struct Info info)
 
     for (depth = 1; gettimems() - startTime < 100; depth++)
     {
+        nodes = 0;
         search(pos, depth, 0, -MATE, MATE);
 
         getTT(pos->state->zobrist, &ttMove, &ttEval, &ttDepth, &ttFlag);
 
-        printf("info depth %d seldepth %d score cp %d nodes 0 time %d ", depth, depth, ttEval, gettimems() - startTime);
+        printf("info depth %d seldepth %d score cp %d nodes %d time %d ", depth, depth, ttEval, nodes, gettimems() - startTime);
 
         printf("pv");
         for (int i = 0; i < depth; i++)
@@ -66,6 +68,40 @@ uint16_t bestMove(struct Position *pos, struct Info info)
 
 
     return ttMove;
+}
+
+int qsearch(struct Position *pos, int height, int alpha, int beta)
+{
+    int eval = evalPos(pos);
+    int best = eval;
+
+    uint16_t moveList[MAX_MOVES];
+    uint16_t *begin = moveList;
+    uint16_t *end   = generateNoisyMoves(pos, moveList);
+    
+    struct State newState;
+    for ( ; begin < end; begin++)
+    {
+        doMove(*begin, pos, &newState);
+        eval = -qsearch(pos, height + 1, -beta, -alpha);
+        undoMove(*begin, pos);
+
+        if (eval > best)
+        {
+            best = eval;
+            if (eval > alpha) 
+            {
+                alpha = eval;
+            }
+        }
+
+        if (alpha >= beta)
+        {
+            break;
+        }
+    }
+
+    return best;
 }
 
 int search(struct Position *pos, int depth, int height, int alpha, int beta)
@@ -90,7 +126,8 @@ int search(struct Position *pos, int depth, int height, int alpha, int beta)
 
     if (depth == 0)
     {
-        return evalPos(pos);
+        nodes++;
+        return qsearch(pos, height, alpha, beta);//evalPos(pos);
     }
 
     uint16_t moveList[MAX_MOVES];
