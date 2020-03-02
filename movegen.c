@@ -55,6 +55,25 @@ uint16_t* generatePawnMoves
         }
     } else
     {
+        if (pos->state->enpassant != NO_SQ)
+        {
+            ep = sq_bb(pos->state->enpassant);
+            b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & ep;
+            b2 = shift_bb(pawnsNotOn7, upLeft)  & NILEH & ep;
+            while (b1)
+            {
+                to = __builtin_ctzll(b1);
+                *moveList++ = (to - upRight) | (to << 6) | (ENPASSANT << 12);
+                b1 &= b1 - 1;
+            }
+            while (b2)
+            {
+                to = __builtin_ctzll(b2);
+                *moveList++ = (to - upLeft) | (to << 6) | (ENPASSANT << 12);
+                b2 &= b2 - 1;
+            }
+        }
+
         b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & enemies;
         b2 = shift_bb(pawnsNotOn7, upLeft ) & NILEH & enemies;
         while (b1)
@@ -94,25 +113,6 @@ uint16_t* generatePawnMoves
                 b3 &= b3 - 1;
             }
         }
-
-        if (pos->state->enpassant != NO_SQ)
-        {
-            ep = sq_bb(pos->state->enpassant);
-            b1 = shift_bb(pawnsNotOn7, upRight) & NILEA & ep;
-            b2 = shift_bb(pawnsNotOn7, upLeft)  & NILEH & ep;
-            while (b1)
-            {
-                to = __builtin_ctzll(b1);
-                *moveList++ = (to - upRight) | (to << 6) | (ENPASSANT << 12);
-                b1 &= b1 - 1;
-            }
-            while (b2)
-            {
-                to = __builtin_ctzll(b2);
-                *moveList++ = (to - upLeft) | (to << 6) | (ENPASSANT << 12);
-                b2 &= b2 - 1;
-            }
-        }
     }
 
     return moveList;
@@ -141,20 +141,6 @@ uint16_t* generatePieceMoves
         b &= b - 1;
     }
 
-    b = pos->piece[KING] & friends;
-    while (b)
-    {
-        from = __builtin_ctzll(b);
-        c = kingLookup(from) & targets;
-        while (c)
-        {
-            to = __builtin_ctzll(c);
-            *moveList++ = (from) | (to << 6);
-            c &= c - 1;
-        }
-        b &= b - 1;
-    }
-
     b = (pos->piece[ROOK] | pos->piece[QUEEN]) & friends;
     while (b)
     {
@@ -174,6 +160,20 @@ uint16_t* generatePieceMoves
     {
         from = __builtin_ctzll(b);
         c = bishopLookup(from, empties) & targets;
+        while (c)
+        {
+            to = __builtin_ctzll(c);
+            *moveList++ = (from) | (to << 6);
+            c &= c - 1;
+        }
+        b &= b - 1;
+    }
+
+    b = pos->piece[KING] & friends;
+    while (b)
+    {
+        from = __builtin_ctzll(b);
+        c = kingLookup(from) & targets;
         while (c)
         {
             to = __builtin_ctzll(c);
@@ -240,7 +240,6 @@ uint16_t* generateLegalMoves(struct Position *pos, uint16_t *moveList)
     const uint64_t friends    = pos->color[us];
     const uint64_t enemies    = pos->color[them];
     const uint64_t empties    = ~(friends | enemies);
-    const uint64_t notFriends = ~friends;
 
     uint16_t *legalList = moveList;
     uint16_t *end       = moveList;
@@ -299,7 +298,6 @@ uint16_t* generateNoisyMoves(struct Position *pos, uint16_t *moveList)
     const uint64_t friends    = pos->color[us];
     const uint64_t enemies    = pos->color[them];
     const uint64_t empties    = ~(friends | enemies);
-    const uint64_t notFriends = ~friends;
 
     uint16_t *legalList = moveList;
     uint16_t *end       = moveList;
